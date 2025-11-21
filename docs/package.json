@@ -8,8 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler pages deploy",
-    "pages:deploy": "wrangler pages deploy"
+    "deploy": "npm run build && wrangler pages deploy dist",
+    "pages:deploy": "wrangler pages deploy dist"
   },
   "dependencies": {
     "prismjs": "^1.30.0",
