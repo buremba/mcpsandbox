@@ -4,9 +4,10 @@ import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-json';
+import 'prismjs/components/prism-bash';
 import HowItWorksSection from './HowItWorksSection';
 
-const ClickableCode = ({ code, clickableWord, tooltipText, scrollToId }) => {
+const HighlightedCode = ({ code, language = 'javascript', clickableWord, tooltipText, scrollToId }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
   const handleClick = (e) => {
@@ -15,7 +16,6 @@ const ClickableCode = ({ code, clickableWord, tooltipText, scrollToId }) => {
       const element = document.getElementById(scrollToId);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Add a highlight effect
         element.style.transition = 'all 0.3s ease';
         element.style.transform = 'scale(1.02)';
         setTimeout(() => {
@@ -25,8 +25,12 @@ const ClickableCode = ({ code, clickableWord, tooltipText, scrollToId }) => {
     }
   };
 
+  const prismLang = Prism.languages[language] || Prism.languages.javascript;
+
   if (!clickableWord) {
-    return code;
+    return (
+      <span dangerouslySetInnerHTML={{ __html: Prism.highlight(code, prismLang, language) }} />
+    );
   }
 
   const parts = code.split(clickableWord);
@@ -35,7 +39,7 @@ const ClickableCode = ({ code, clickableWord, tooltipText, scrollToId }) => {
     <>
       {parts.map((part, index) => (
         <React.Fragment key={index}>
-          {part}
+          <span dangerouslySetInnerHTML={{ __html: Prism.highlight(part, prismLang, language) }} />
           {index < parts.length - 1 && (
             <span
               className="clickable-code-word"
@@ -48,6 +52,7 @@ const ClickableCode = ({ code, clickableWord, tooltipText, scrollToId }) => {
                 textDecoration: 'underline',
                 textDecorationStyle: 'dotted',
                 textDecorationColor: '#4a9eff',
+                color: '#4a9eff'
               }}
             >
               {clickableWord}
@@ -95,15 +100,7 @@ const ClickableCode = ({ code, clickableWord, tooltipText, scrollToId }) => {
 };
 
 const FeatureRow = ({ title, description, icon, code, language = 'javascript', reversed, fileName, id, clickableWord, scrollToId, tooltipText }) => {
-  useEffect(() => {
-    Prism.highlightAll();
-  }, [code]);
-
-  const codeContent = clickableWord ? (
-    <ClickableCode code={code.trim()} clickableWord={clickableWord} scrollToId={scrollToId} tooltipText={tooltipText} />
-  ) : (
-    code.trim()
-  );
+  // No useEffect for Prism.highlightAll() needed anymore as we use HighlightedCode
 
   return (
     <div id={id} className={`feature-row ${reversed ? 'reversed' : ''}`}>
@@ -123,7 +120,15 @@ const FeatureRow = ({ title, description, icon, code, language = 'javascript', r
             {fileName && <div className="code-filename">{fileName}</div>}
           </div>
           <pre className="code-content">
-            <code className={`language-${language}`}>{codeContent}</code>
+            <code className={`language-${language}`}>
+              <HighlightedCode
+                code={code.trim()}
+                language={language}
+                clickableWord={clickableWord}
+                scrollToId={scrollToId}
+                tooltipText={tooltipText}
+              />
+            </code>
           </pre>
         </div>
       </div>
@@ -175,16 +180,20 @@ const InteractiveConfig = () => {
   },
   "mcps": [
     {
-      "name": "github",
-      "transport": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"]
-    },
-    {
       "name": "filesystem",
       "transport": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/private/tmp"]
+    },
+    {
+      "name": "sentry",
+      "transport": "http",
+      "endpoint": "https://mcp.sentry.dev/mcp"
+    },
+    {
+      "name": "context7",
+      "transport": "http",
+      "endpoint": "https://api.context7.com/mcp"
     }
   ]
 }`;
@@ -194,47 +203,49 @@ const InteractiveConfig = () => {
   }, []);
 
   return (
-    <div id="interactive-config" className="feature-row interactive-config-container">
-      <div className="feature-text">
-        <div className="config-sections">
-          {sections.map((section) => (
-            <div
-              key={section.id}
-              className={`config-section-item ${hoveredSection === section.id ? 'active' : ''} ${hoveredSection && hoveredSection !== section.id ? 'dimmed' : ''}`}
-              onMouseEnter={() => setHoveredSection(section.id)}
-              onMouseLeave={() => setHoveredSection(null)}
-            >
-              <h3 className="feature-title-large">{section.title}</h3>
-              <p className="feature-description-large" style={{ marginTop: '1rem' }}>{section.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="feature-code">
-        <div className="code-window">
-          <div className="code-header">
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <span className="code-dot red"></span>
-              <span className="code-dot yellow"></span>
-              <span className="code-dot green"></span>
-            </div>
-            <div className="code-filename">1mcp.config.json</div>
-          </div>
-          <div className="code-content-wrapper">
-            <pre className="code-content">
-              <code className="language-json">{code.trim()}</code>
-            </pre>
-            {hoveredSection && (
-              <div className="code-overlay">
-                {sections.map((section) => {
-                  if (section.id !== hoveredSection) {
-                    return null;
-                  }
-                  return null;
-                })}
+    <div>      <div className="section-header" style={{ textAlign: 'center' }}><h2 className="section-title">Specification</h2></div>
+      <div id="interactive-config" className="feature-row interactive-config-container">
+
+        <div className="feature-text">
+          <div className="config-sections">
+            {sections.map((section) => (
+              <div
+                key={section.id}
+                className={`config-section-item ${hoveredSection === section.id ? 'active' : ''} ${hoveredSection && hoveredSection !== section.id ? 'dimmed' : ''}`}
+                onMouseEnter={() => setHoveredSection(section.id)}
+                onMouseLeave={() => setHoveredSection(null)}
+              >
+                <h3 className="feature-title-large">{section.title}</h3>
+                <p className="feature-description-large" style={{ marginTop: '1rem' }}>{section.description}</p>
               </div>
-            )}
-            <style>{`
+            ))}
+          </div>
+        </div>
+        <div className="feature-code">
+          <div className="code-window">
+            <div className="code-header">
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <span className="code-dot red"></span>
+                <span className="code-dot yellow"></span>
+                <span className="code-dot green"></span>
+              </div>
+              <div className="code-filename">1mcp.config.json</div>
+            </div>
+            <div className="code-content-wrapper">
+              <pre className="code-content">
+                <code className="language-json">{code.trim()}</code>
+              </pre>
+              {hoveredSection && (
+                <div className="code-overlay">
+                  {sections.map((section) => {
+                    if (section.id !== hoveredSection) {
+                      return null;
+                    }
+                    return null;
+                  })}
+                </div>
+              )}
+              <style>{`
               .code-content-wrapper {
                 position: relative;
               }
@@ -256,68 +267,70 @@ const InteractiveConfig = () => {
                 }
               `).join('')}
             `}</style>
-            {hoveredSection && (() => {
-              const section = sections.find(s => s.id === hoveredSection);
-              if (!section) return null;
+              {hoveredSection && (() => {
+                const section = sections.find(s => s.id === hoveredSection);
+                if (!section) return null;
 
-              const paddingTop = 1.5; // rem
-              const lineHeight = 1.35; // rem
+                const paddingTop = 1.5; // rem
+                const lineHeight = 1.35; // rem
 
-              const topOffset = paddingTop + (section.lineStart - 1) * lineHeight;
-              const height = (section.lineEnd - section.lineStart + 1) * lineHeight;
+                const topOffset = paddingTop + (section.lineStart - 1) * lineHeight;
+                const height = (section.lineEnd - section.lineStart + 1) * lineHeight;
 
-              return (
-                <>
-                  <div
-                    className="dim-overlay"
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: `${topOffset}rem`,
-                      backgroundColor: 'rgba(0,0,0,0.6)',
-                      pointerEvents: 'none',
-                      transition: 'all 0.3s ease'
-                    }}
-                  />
-                  <div
-                    className="dim-overlay"
-                    style={{
-                      position: 'absolute',
-                      top: `${topOffset + height}rem`,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      backgroundColor: 'rgba(0,0,0,0.6)',
-                      pointerEvents: 'none',
-                      transition: 'all 0.3s ease'
-                    }}
-                  />
-                </>
-              );
-            })()}
+                return (
+                  <>
+                    <div
+                      className="dim-overlay"
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: `${topOffset}rem`,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        pointerEvents: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                    />
+                    <div
+                      className="dim-overlay"
+                      style={{
+                        position: 'absolute',
+                        top: `${topOffset + height}rem`,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.6)',
+                        pointerEvents: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                    />
+                  </>
+                );
+              })()}
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   );
 };
 
-const FeaturesSection = () => {
-  return (
-    <section id="features" className="features-section-large">
-      <HowItWorksSection />
+const UnifiedSDKFeature = () => {
+  const [activeId, setActiveId] = useState('sdk');
 
-      <div className="features-container">
-        <FeatureRow
-          title="Drop-in AI SDK Support"
-          description="Turn your tools into a sandboxed MCP surface with a single function call. No extra glue code needed."
-          fileName="App.tsx (Next.js)"
-          clickableWord="config"
-          scrollToId="interactive-config"
-          tooltipText="Click to see full config spec"
-          code={`
+  const features = [
+    {
+      id: 'sdk',
+      title: "Drop-in AI SDK Support",
+      description: "Turn your tools into a sandboxed MCP surface with a single function call. No extra glue code needed.",
+      fileName: "App.tsx (Next.js)",
+      language: "javascript",
+      clickableWord: "config",
+      scrollToId: "interactive-config",
+      tooltipText: "Click to see full config spec",
+      code: `
 import { convertTo1MCP } from '@1mcp/ai-sdk';
 import { generateText } from 'ai';
 
@@ -327,29 +340,128 @@ const result = await generateText({
   model: openai('gpt-4'),
   tools: client.tools(),
   prompt: 'Get weather for Paris'
-});
-`}
-        />
-
-        <FeatureRow
-          title="Browser sandboxing with WASM"
-          description="Offload compute to the client. Execute code safely in a browser worker via WebAssembly. It's more secure, scalable, and cost-effective compared to cloud sandboxing."
-          fileName="YourClientReactHome.tsx"
-          reversed={true}
-          code={`
+});`
+    },
+    {
+      id: 'wasm',
+      title: "Browser sandboxing with WASM",
+      description: "Offload compute to the client. Execute code safely in a browser worker via WebAssembly. It's more secure, scalable, and cost-effective compared to cloud sandboxing.",
+      fileName: "YourClientReactHome.tsx",
+      language: "javascript",
+      code: `
 import { RelayBrowserClient } from '@1mcp/ai-sdk/browser';
 
-const client = new RelayBrowserClient('http://localhost:3000');
+let client = new RelayBrowserClient('http://localhost:3000');
 await client.connect();
 
 client.onCapsule(async (capsule) => {
   // Execute safely in WASM worker
   const result = await executeInWorker(capsule);
   await client.sendResult(result);
-});
-`}
-        />
+});`
+    },
+    {
+      id: 'backend',
+      title: "Standalone Server Integration",
+      description: "Decouple execution from your app. Run Relay as a standalone service and connect any MCP client (Claude, Cursor, etc.).",
+      fileName: "Terminal",
+      language: "bash",
+      clickableWord: "1mcp.config.json",
+      scrollToId: "interactive-config",
+      tooltipText: "Click to see full config spec",
+      code: `
+# 1. Initialize default configuration
+npx 1mcp init
 
+# 2. Start the server with your config
+npx 1mcp serve --config 1mcp.config.json
+
+# Server running on http://localhost:3000/mcp
+# Connect via SSE or stdio transport`
+    }
+  ];
+
+  const activeFeature = features.find(f => f.id === activeId) || features[0];
+
+  // No useEffect for Prism.highlightAll() needed
+
+  return (
+    <div>
+      <div className="section-header" style={{ textAlign: 'center' }}><h2 className="section-title">Quickstart</h2></div>
+
+      <div className="feature-row reversed unified-sdk-container">
+        <style>{`
+        .unified-sdk-container .code-window {
+          min-height: 420px;
+          display: flex;
+          flex-direction: column;
+        }
+        .unified-sdk-container .code-content {
+          flex: 1;
+        }
+        @media (min-width: 901px) {
+          .unified-sdk-container .feature-code {
+            min-width: 550px;
+          }
+        }
+      `}</style>
+        <div className="feature-text">
+          <div className="config-sections">
+            {features.map((feature) => (
+              <div
+                key={feature.id}
+                className="config-section-item"
+                onMouseEnter={() => setActiveId(feature.id)}
+                style={{
+                  cursor: 'pointer',
+                  marginBottom: '2rem',
+                  transition: 'opacity 0.2s',
+                  opacity: activeId === feature.id ? 1 : 0.4
+                }}
+              >
+                <h3 className="feature-title-large">{feature.title}</h3>
+                <p className="feature-description-large" style={{ marginTop: '1rem' }}>{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="feature-code">
+          <div className="code-window">
+            <div className="code-header">
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <span className="code-dot red"></span>
+                <span className="code-dot yellow"></span>
+                <span className="code-dot green"></span>
+              </div>
+              <div className="code-filename">{activeFeature.fileName}</div>
+            </div>
+            <pre className="code-content">
+              <code className={`language-${activeFeature.language}`}>
+                <HighlightedCode
+                  key={activeFeature.id}
+                  code={activeFeature.code.trim()}
+                  language={activeFeature.language}
+                  clickableWord={activeFeature.clickableWord}
+                  scrollToId={activeFeature.scrollToId}
+                  tooltipText={activeFeature.tooltipText}
+                />
+              </code>
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  );
+};
+
+const FeaturesSection = () => {
+  return (
+    <section id="features" className="features-section-large">
+      <HowItWorksSection />
+
+      <div className="features-container">
+        <UnifiedSDKFeature />
         <InteractiveConfig />
       </div>
     </section>

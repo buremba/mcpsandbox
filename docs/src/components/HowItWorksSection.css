@@ -10,6 +10,7 @@
 
 .section-title {
     font-size: 2.5rem;
+    opacity: 0.4;
     font-weight: 700;
     margin-bottom: 1rem;
     background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
