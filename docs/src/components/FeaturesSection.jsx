@@ -36,7 +36,7 @@ const HighlightedCode = ({ code, language = 'javascript', clickableWord, tooltip
   const parts = code.split(clickableWord);
 
   return (
-    <>
+    <span>
       {parts.map((part, index) => (
         <React.Fragment key={index}>
           <span dangerouslySetInnerHTML={{ __html: Prism.highlight(part, prismLang, language) }} />
@@ -95,7 +95,7 @@ const HighlightedCode = ({ code, language = 'javascript', clickableWord, tooltip
           )}
         </React.Fragment>
       ))}
-    </>
+    </span>
   );
 };
 

@@ -8,6 +8,7 @@ import { ThreadSidebar } from "./components/thread-sidebar";
 import { ChatThread } from "./components/chat-thread";
 import { Select } from "./components/ui/select";
 import { browserTools } from "./tools/browser";
+import { calculatorTools } from "./tools/calculator";
 import { tool } from "ai";
 import { z } from "zod";
 import { getProviderIcon } from "./components/icons/provider-icons";
@@ -77,6 +78,7 @@ function App() {
 	// Prepare tools - only include MCP tools if relay is connected
 	const allTools = {
 		...browserTools,
+		...calculatorTools,
 		...(relayConnected ? mcpTools : {}),
 	};
 
