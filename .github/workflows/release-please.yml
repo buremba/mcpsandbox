@@ -21,6 +21,7 @@ jobs:
         with:
           release-type: node
           package-name: 1mcp
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 
   publish-npm:
     needs: release-please
