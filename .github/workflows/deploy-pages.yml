@@ -33,6 +33,12 @@ jobs:
       - name: Build docs
         run: pnpm --filter 1mcp-docs build
 
+      - name: Create Cloudflare Pages project (if not exists)
+        env:
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+        run: npx wrangler pages project create 1mcp-landing --production-branch=main || true
+
       - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
