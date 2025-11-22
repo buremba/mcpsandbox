@@ -22,16 +22,13 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        working-directory: docs
+        run: npm ci
 
       - name: Build docs
-        run: pnpm --filter 1mcp-docs build
+        working-directory: docs
+        run: npm run build
 
       - name: Create Cloudflare Pages project (if not exists)
         env:
