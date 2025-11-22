@@ -9,7 +9,7 @@ import { createHash } from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import archiver from "archiver";
 import type { Logger } from "pino";
-import type { Mount, FSLayer } from "@1mcp/shared";
+import type { Mount, FSLayer } from "@onemcp/shared";
 import { GitCloner } from "../services/git-cloner.js";
 
 export interface MountLayerResult {

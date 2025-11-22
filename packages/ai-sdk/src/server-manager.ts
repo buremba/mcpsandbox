@@ -3,7 +3,7 @@
  */
 
 import { startServer, type ServerConfig } from "1mcp";
-import type { RelayConfig } from "@1mcp/shared";
+import type { RelayConfig } from "@onemcp/shared";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";

@@ -1,5 +1,5 @@
 /**
- * @1mcp/shared - Shared types, schemas, and constants
+ * @onemcp/shared - Shared types, schemas, and constants
  */
 
 // Export all types

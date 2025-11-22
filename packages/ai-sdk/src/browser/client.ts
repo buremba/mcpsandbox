@@ -2,7 +2,7 @@
  * Browser client for connecting to relay-mcp server via SSE
  */
 
-import type { Capsule } from "@1mcp/shared";
+import type { Capsule } from "@onemcp/shared";
 
 export interface ExecutionResult {
 	runId: string;

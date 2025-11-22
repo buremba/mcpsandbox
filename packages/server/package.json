@@ -1,7 +1,7 @@
 {
   "name": "1mcp",
-  "version": "0.1.0",
-  "description": "MCP server with sandboxed JavaScript execution using QuickJS and V8 Isolates",
+  "version": "0.1.3",
+  "description": "MCP server aggregator with sandboxed JavaScript execution using WASM & QuickJS",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,8 +36,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@1mcp/ai-sdk": "workspace:*",
-    "@1mcp/shared": "workspace:*",
+    "@onemcp/ai-sdk": "workspace:*",
+    "@onemcp/shared": "workspace:*",
     "@hono/node-server": "^1.13.0",
     "archiver": "^7.0.1",
     "commander": "^12.0.0",

@@ -13,7 +13,7 @@ import type {
 	WriteFileOptions,
 	DirEntry,
 	Stats,
-} from '@1mcp/shared';
+} from '@onemcp/shared';
 import { FilesystemPolicyEnforcer } from '../policy/filesystem.js';
 
 export interface NodeVFSOptions {

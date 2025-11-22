@@ -1,6 +1,6 @@
 {
-  "name": "@1mcp/ai-sdk",
-  "version": "0.1.0",
+  "name": "@onemcp/ai-sdk",
+  "version": "0.1.1",
   "description": "Convert AI SDK tools to 1mcp gateway tools - reduce context bloat",
   "type": "module",
   "main": "./dist/index.js",
@@ -38,7 +38,7 @@
     "fflate": "^0.8.2",
     "zod": "^3.23.8",
     "1mcp": "workspace:*",
-    "@1mcp/shared": "workspace:*"
+    "@onemcp/shared": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0"

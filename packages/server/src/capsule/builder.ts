@@ -15,7 +15,7 @@ import type {
   Policy,
   RunJsParams,
   FSLayer,
-} from "@1mcp/shared";
+} from "@onemcp/shared";
 import { intersectPolicies } from "../policy/intersection.js";
 import { MountLayerBuilder } from "./mount-builder.js";
 import type { Logger } from "pino";

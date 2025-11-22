@@ -9,11 +9,11 @@ import { unzipSync } from "fflate";
 import { createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
-import type { Capsule } from "@1mcp/shared";
+import type { Capsule } from "@onemcp/shared";
 import { QuickJSRuntime } from "./quickjs-runtime.js";
 import { NodeVirtualFilesystem } from "../vfs/node-vfs.js";
 import { FilesystemPolicyEnforcer } from "../policy/filesystem.js";
-import type { FilesystemPolicy, MCPServerConfig } from "@1mcp/shared";
+import type { FilesystemPolicy, MCPServerConfig } from "@onemcp/shared";
 import type { MCPManager } from "../services/mcp-manager.js";
 
 export interface ExecutionResult {

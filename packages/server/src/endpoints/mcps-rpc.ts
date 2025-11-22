@@ -3,7 +3,7 @@
  */
 
 import type { Context } from "hono";
-import type { McpsRpcRequest } from "@1mcp/shared";
+import type { McpsRpcRequest } from "@onemcp/shared";
 import type { MCPManager } from "../services/mcp-manager.js";
 
 export function setupMcpsRpcEndpoint(app: any, mcpManager: MCPManager) {

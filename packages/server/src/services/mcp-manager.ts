@@ -3,7 +3,7 @@
  */
 
 import { spawn, type ChildProcess } from "node:child_process";
-import type { MCPServerConfig } from "@1mcp/shared";
+import type { MCPServerConfig } from "@onemcp/shared";
 import { fetch } from "undici";
 
 interface MCPProcess {

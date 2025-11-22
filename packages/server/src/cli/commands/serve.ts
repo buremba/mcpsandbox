@@ -9,7 +9,7 @@ import kleur from "kleur";
 import open from "open";
 import { startServer } from "../../index.js";
 import { generateSigningKeys } from "../../services/crypto.js";
-import type { RelayConfig } from "@1mcp/shared";
+import type { RelayConfig } from "@onemcp/shared";
 
 interface ServeOptions {
   config: string;

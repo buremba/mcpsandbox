@@ -5,10 +5,10 @@
  * in QuickJS or Pyodide WASM runtime.
  */
 
-import type { Capsule } from "@1mcp/shared";
+import type { Capsule } from "@onemcp/shared";
 import { OPFSVirtualFilesystem } from "./opfs-vfs.js";
 import { BrowserLayerExtractor } from "./layer-extractor.js";
-import { RUNTIME_CDNS, setupConsole, injectVFSFunctions, dumpResult } from "@1mcp/shared";
+import { RUNTIME_CDNS, setupConsole, injectVFSFunctions, dumpResult } from "@onemcp/shared";
 
 interface WorkerMessage {
 	type: "execute";

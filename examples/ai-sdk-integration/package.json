@@ -15,7 +15,7 @@
     "test:debug": "playwright test --debug"
   },
   "dependencies": {
-    "@1mcp/ai-sdk": "workspace:*",
+    "@onemcp/ai-sdk": "workspace:*",
     "@ai-sdk/anthropic": "2.0.41",
     "@ai-sdk/openai": "2.0.64",
     "@assistant-ui/react": "0.11.37",

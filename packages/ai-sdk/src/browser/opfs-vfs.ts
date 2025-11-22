@@ -5,7 +5,7 @@
  * Provides sandboxed filesystem access with policy enforcement.
  */
 
-import type { FilesystemPolicy } from "@1mcp/shared";
+import type { FilesystemPolicy } from "@onemcp/shared";
 
 /**
  * Browser-compatible filesystem policy enforcer

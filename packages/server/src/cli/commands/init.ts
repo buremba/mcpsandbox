@@ -5,7 +5,7 @@
 import { writeFile, access } from "node:fs/promises";
 import { resolve } from "node:path";
 import kleur from "kleur";
-import { DEFAULT_POLICY } from "@1mcp/shared";
+import { DEFAULT_POLICY } from "@onemcp/shared";
 
 const DEFAULT_CONFIG = {
   language: "js",

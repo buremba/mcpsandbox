@@ -17,7 +17,7 @@ import { setupMcpEndpoint } from "./endpoints/mcp.js";
 import { setupSessionEndpoints } from "./endpoints/session.js";
 import { setupCapsuleEndpoints } from "./endpoints/capsules.js";
 import { setupMcpsRpcEndpoint } from "./endpoints/mcps-rpc.js";
-import type { RelayConfig } from "@1mcp/shared";
+import type { RelayConfig } from "@onemcp/shared";
 
 export interface ServerConfig {
   config: RelayConfig;

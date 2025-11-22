@@ -3,8 +3,8 @@
  */
 
 import { getQuickJS } from "quickjs-emscripten";
-import type { Capsule, VirtualFilesystem, MCPServerConfig } from "@1mcp/shared";
-import { setupConsole, wrapCodeForReturn, dumpResult, injectVFSFunctions } from "@1mcp/shared";
+import type { Capsule, VirtualFilesystem, MCPServerConfig } from "@onemcp/shared";
+import { setupConsole, wrapCodeForReturn, dumpResult, injectVFSFunctions } from "@onemcp/shared";
 import type { MCPManager } from "../services/mcp-manager.js";
 import { NetworkPolicyEnforcer } from "../policy/network.js";
 

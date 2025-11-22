@@ -4,7 +4,7 @@
 
 import type { Context } from "hono";
 import { nanoid } from "nanoid";
-import type { RunJsParams, BackchannelEvent, RelayConfig } from "@1mcp/shared";
+import type { RunJsParams, BackchannelEvent, RelayConfig } from "@onemcp/shared";
 import { CapsuleBuilder } from "../capsule/builder.js";
 import { NodeExecutor } from "../harness/executor.js";
 import { readFile, writeFile, readdir } from "node:fs/promises";

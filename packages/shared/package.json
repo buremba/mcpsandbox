@@ -1,6 +1,6 @@
 {
-  "name": "@1mcp/shared",
-  "version": "0.1.0",
+  "name": "@onemcp/shared",
+  "version": "0.1.1",
   "description": "Shared types and schemas for 1mcp",
   "type": "module",
   "main": "dist/index.js",
@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/1mcp"
+    "url": "https://github.com/buremba/1mcp"
   },
   "files": [
     "dist",

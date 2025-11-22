@@ -1,5 +1,5 @@
 /**
- * @1mcp/ai-sdk
+ * @onemcp/ai-sdk
  *
  * Convert AI SDK tools to 1mcp gateway tools using MCP integration.
  */
@@ -10,7 +10,7 @@ import { startEmbeddedRelay } from "./server-manager.js";
 import { writeToolsToWorkDir } from "./tool-serializer.js";
 
 // Import RelayConfig type - will be resolved at build time
-import type { RelayConfig } from "@1mcp/shared";
+import type { RelayConfig } from "@onemcp/shared";
 
 // HTTP MCP Transport (fallback implementation if not exported by AI SDK)
 class HttpMCPTransport {
@@ -54,7 +54,7 @@ export interface ConvertResult {
  *
  * @example
  * ```typescript
- * import { convertTo1McpTools } from '@1mcp/ai-sdk';
+ * import { convertTo1McpTools } from '@onemcp/ai-sdk';
  * import { streamText } from 'ai';
  *
  * // Convert your 50 AI SDK tools to 5 gateway tools
@@ -163,4 +163,4 @@ export { RelayBrowserClient } from "./browser/client.js";
 
 // Re-export types
 export type { CoreTool } from "ai";
-export type { RelayConfig } from "@1mcp/shared";
+export type { RelayConfig } from "@onemcp/shared";

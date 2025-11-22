@@ -6,8 +6,8 @@ import { nanoid } from "nanoid";
 import { SignJWT, importPKCS8, type KeyLike } from "jose";
 import { readFile } from "node:fs/promises";
 import { EventEmitter } from "node:events";
-import { SESSION_CONFIG } from "@1mcp/shared";
-import type { Session, BackchannelEvent } from "@1mcp/shared";
+import { SESSION_CONFIG } from "@onemcp/shared";
+import type { Session, BackchannelEvent } from "@onemcp/shared";
 
 export class SessionManager {
   private sessions = new Map<string, Session>();

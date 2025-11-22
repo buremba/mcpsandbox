@@ -3,7 +3,7 @@
  */
 
 import { resolve, relative } from "node:path";
-import type { FilesystemPolicy } from "@1mcp/shared";
+import type { FilesystemPolicy } from "@onemcp/shared";
 
 export class FilesystemPolicyEnforcer {
   constructor(private policy: FilesystemPolicy) {}

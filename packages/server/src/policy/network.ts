@@ -4,7 +4,7 @@
 
 import { parse as parseDomain } from "tldts";
 import * as ipaddr from "ipaddr.js";
-import type { NetworkPolicy } from "@1mcp/shared";
+import type { NetworkPolicy } from "@onemcp/shared";
 
 export class NetworkPolicyEnforcer {
   constructor(private policy: NetworkPolicy) {}

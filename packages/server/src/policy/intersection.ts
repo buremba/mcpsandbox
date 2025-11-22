@@ -2,7 +2,7 @@
  * Policy intersection - merging server defaults with client overrides (spec §9)
  */
 
-import type { Policy, NetworkPolicy, FilesystemPolicy, LimitsPolicy } from "@1mcp/shared";
+import type { Policy, NetworkPolicy, FilesystemPolicy, LimitsPolicy } from "@onemcp/shared";
 
 /**
  * Compute intersection of two policies

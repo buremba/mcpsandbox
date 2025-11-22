@@ -4,7 +4,7 @@
  */
 
 import { unzipSync } from "fflate";
-import type { FSLayer } from "@1mcp/shared";
+import type { FSLayer } from "@onemcp/shared";
 import type { OPFSVirtualFilesystem } from "./opfs-vfs.js";
 
 export interface LayerExtractionResult {
