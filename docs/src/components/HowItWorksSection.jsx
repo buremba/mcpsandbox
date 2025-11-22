@@ -1,8 +1,8 @@
 import React from 'react';
 import './HowItWorksSection.css';
 
-const StepCard = ({ number, title, description, icon }) => (
-    <div className="step-card">
+const StepCard = ({ number, title, description, icon, className = '' }) => (
+    <div className={`step-card ${className}`}>
         <div className="step-number">{number}</div>
         <div className="step-icon">{icon}</div>
         <h3 className="step-title">{title}</h3>
@@ -13,32 +13,36 @@ const StepCard = ({ number, title, description, icon }) => (
 const HowItWorksSection = () => {
     return (
         <section className="how-it-works-section">
-
+            <div className="section-header" style={{ textAlign: "center" }}>
+                <h2 className="section-title">How It Works</h2>
+            </div>
             <div className="steps-container">
                 <StepCard
-                    number="01"
-                    title="Agent Plans"
+                    title="🤖 Agent Plans"
                     description="Your agent generates standard JavaScript code instead of making multiple expensive tool calls."
-                    icon="🤖"
                 />
 
                 <div className="step-connector">→</div>
 
                 <StepCard
-                    number="02"
-                    title="1mcp Relays"
+                    title="🛡️ 1mcp Relays"
                     description="The relay server bundles the code into a secure, signed capsule with strict policy enforcement."
-                    icon="🛡️"
                 />
 
                 <div className="step-connector">→</div>
 
-                <StepCard
-                    number="03"
-                    title="Browser Executes"
-                    description="The client receives the capsule and executes it safely in a local WASM worker."
-                    icon="⚡"
-                />
+                <div className="step-column">
+                    <StepCard
+                        title="🌐 Browser Executes"
+                        description="For web apps: The client executes it safely in a local WASM worker."
+                        className="step-card-small"
+                    />
+                    <StepCard
+                        title="☁️ Server Executes"
+                        description="For backend: The server executes it in a sandboxed WASM environment."
+                        className="step-card-small"
+                    />
+                </div>
             </div>
         </section>
     );
