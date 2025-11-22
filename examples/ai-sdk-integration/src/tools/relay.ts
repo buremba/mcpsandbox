@@ -1,7 +1,7 @@
 /**
  * DEPRECATED: This file is no longer used.
  *
- * The app now uses convertTo1MCP from @1mcp/ai-sdk to properly connect
+ * The app now uses convertTo1MCP from @onemcp/ai-sdk to properly connect
  * to the relay server via MCP protocol, which automatically provides
  * all 4 tools: run_js, read, write, search.
  *

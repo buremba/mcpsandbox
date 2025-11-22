@@ -329,8 +329,8 @@ const UnifiedSDKFeature = () => {
       scrollToId: "interactive-config",
       tooltipText: "Click to see full config spec",
       code: `
-import { convertTo1MCP } from '@1mcp/ai-sdk';
-import { generateText } from 'ai';
+import { convertTo1MCP } from '@onemcp/ai-sdk';
+import { generateText }s from 'ai';
 
 const { client } = await convertTo1MCP(tools, config);
 
@@ -347,7 +347,7 @@ const result = await generateText({
       fileName: "YourClientReactHome.tsx",
       language: "javascript",
       code: `
-import { RelayBrowserClient } from '@1mcp/ai-sdk/browser';
+import { RelayBrowserClient } from '@onemcp/ai-sdk/browser';
 
 let client = new RelayBrowserClient('http://localhost:3000');
 await client.connect();

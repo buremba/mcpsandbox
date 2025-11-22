@@ -27,10 +27,10 @@ The server will start and expose MCP tools that can be used by your AI agent.
 
 ## Using with AI SDK
 
-The `@1mcp/ai-sdk` package turns AI SDK tools into a sandboxed MCP surface:
+The `@onemcp/ai-sdk` package turns AI SDK tools into a sandboxed MCP surface:
 
 ```typescript
-import { convertTo1MCP } from '@1mcp/ai-sdk';
+import { convertTo1MCP } from '@onemcp/ai-sdk';
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 
@@ -107,7 +107,7 @@ await read('/test.txt'); // file persists - filesystem state is maintained
 - **Capsules are just code.** You author TypeScript/JavaScript with whatever `npm` deps you want; 1mcp bundles them with esbuild and WASM, so there’s no provider-specific SDK (unlike Cloudflare/Vercel runtimes or Daytona sandboxes that expect their own APIs).
 - **Session-scoped policies.** Each agent session gets strict network, filesystem, and runtime limits, rather than the global project settings Cloudflare/Vercel/Daytona enforce.
 - **Browser execution to offload compute.** Capsules can run inside the client’s browser worker via SSE, letting you save server-side compute that Cloudflare/Vercel/Daytona would otherwise bill you for.
-- **Native AI SDK bridge.** `@1mcp/ai-sdk` turns AI SDK tools into MCP tools automatically—no extra glue code—so your agent stays inside the same execution story across backend and browser.
+- **Native AI SDK bridge.** `@onemcp/ai-sdk` turns AI SDK tools into MCP tools automatically—no extra glue code—so your agent stays inside the same execution story across backend and browser.
 
 
 ### Browser Integration
@@ -115,7 +115,7 @@ await read('/test.txt'); // file persists - filesystem state is maintained
 The relay server proxies MCP tools to browser clients via SSE:
 
 ```typescript
-import { RelayBrowserClient } from '@1mcp/ai-sdk/browser';
+import { RelayBrowserClient } from '@onemcp/ai-sdk/browser';
 
 const client = new RelayBrowserClient('http://localhost:3000');
 await client.connect();

@@ -1,5 +1,5 @@
 /**
- * React integration for @1mcp/ai-sdk
+ * React integration for @onemcp/ai-sdk
  *
  * Provides <RelayProvider> component that connects browser to relay-mcp server
  * and executes capsules in WASM sandbox.
@@ -28,7 +28,7 @@ export interface RelayProviderProps {
  *
  * @example
  * ```tsx
- * import { RelayProvider } from '@1mcp/ai-sdk/react';
+ * import { RelayProvider } from '@onemcp/ai-sdk/react';
  *
  * export default function App() {
  *   return (

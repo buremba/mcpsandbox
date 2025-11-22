@@ -46,7 +46,7 @@ cd packages/server
 pnpm dev:serve
 
 # Or use the CLI
-npx @1mcp/server serve
+npx 1mcp serve
 ```
 
 The app will automatically connect to `http://localhost:7888` if available.
