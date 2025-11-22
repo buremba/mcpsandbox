@@ -46,13 +46,11 @@ const tools = {
 const { client, cleanup } = await convertTo1MCP(tools, {
   language: "js",
   npm: { dependencies: { "axios": "^1.6.0" }},
-  policy: {
-    network: {
-      allowedDomains: ["api.weatherapi.com", "*.npmjs.org"]
-    },
-    filesystem: { writable: ["/tmp", "/out"] },
-    limits: { memMb: 256 }
+  network: {
+    allowedDomains: ["api.weatherapi.com", "*.npmjs.org"]
   },
+  filesystem: { writable: ["/tmp", "/out"] },
+  limits: { memMb: 256 },
   mcps: [{
       name: "external-mcp",
       url: "https://weather.example.com"
@@ -140,24 +138,22 @@ Define security policies and MCP servers in `1mcp.config.json`:
     "dependencies": {},
     "lockfile": ""
   },
-  "policy": {
-    "network": {
-      "allowedDomains": ["api.github.com", "*.npmjs.org", "api.context7.com"],
-      "deniedDomains": [],
-      "denyIpLiterals": true,
-      "blockPrivateRanges": true,
-      "maxBodyBytes": 5242880,
-      "maxRedirects": 5
-    },
-    "filesystem": {
-      "readonly": ["/"],
-      "writable": ["/tmp", "/out"]
-    },
-    "limits": {
-      "timeoutMs": 60000,
-      "memMb": 256,
-      "stdoutBytes": 1048576
-    }
+  "network": {
+    "allowedDomains": ["api.github.com", "*.npmjs.org", "api.context7.com"],
+    "deniedDomains": [],
+    "denyIpLiterals": true,
+    "blockPrivateRanges": true,
+    "maxBodyBytes": 5242880,
+    "maxRedirects": 5
+  },
+  "filesystem": {
+    "readonly": ["/"],
+    "writable": ["/tmp", "/out"]
+  },
+  "limits": {
+    "timeoutMs": 60000,
+    "memMb": 256,
+    "stdoutBytes": 1048576
   },
   "mcps": [
     {

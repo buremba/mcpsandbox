@@ -145,14 +145,14 @@ const InteractiveConfig = () => {
     {
       id: 'filesystem',
       title: "Sandboxed Filesystem",
-      description: "Each session gets a private, ephemeral filesystem. Mount local directories or define writable paths.",
+      description: "Each session gets a private, ephemeral filesystem. OPFS is used in browser for persistent storage and you can mount local directories in server mode.",
       lineStart: 12,
       lineEnd: 22
     },
     {
       id: 'mcp',
-      title: "Combine all MCP servers",
-      description: "1mcp allows agents to call other MCP servers via JavaScript functions. It proxies all the requests.",
+      title: "Combine all MCP servers into 1mcp",
+      description: "1mcp allows agents to call other MCP servers via JavaScript functions. It proxies all the requests with relay server.",
       lineStart: 24,
       lineEnd: 36
     }
@@ -194,7 +194,7 @@ const InteractiveConfig = () => {
   }, []);
 
   return (
-    <div className="feature-row interactive-config-container">
+    <div id="interactive-config" className="feature-row interactive-config-container">
       <div className="feature-text">
         <div className="config-sections">
           {sections.map((section) => (
@@ -314,11 +314,14 @@ const FeaturesSection = () => {
           title="Drop-in AI SDK Support"
           description="Turn your tools into a sandboxed MCP surface with a single function call. No extra glue code needed."
           fileName="App.tsx (Next.js)"
+          clickableWord="config"
+          scrollToId="interactive-config"
+          tooltipText="Click to see full config spec"
           code={`
 import { convertTo1MCP } from '@1mcp/ai-sdk';
 import { generateText } from 'ai';
 
-const { client } = await convertTo1MCP(tools);
+const { client } = await convertTo1MCP(tools, config);
 
 const result = await generateText({
   model: openai('gpt-4'),
@@ -331,7 +334,6 @@ const result = await generateText({
         <FeatureRow
           title="Browser sandboxing with WASM"
           description="Offload compute to the client. Execute code safely in a browser worker via WebAssembly. It's more secure, scalable, and cost-effective compared to cloud sandboxing."
-          icon="⚡"
           fileName="YourClientReactHome.tsx"
           reversed={true}
           code={`
