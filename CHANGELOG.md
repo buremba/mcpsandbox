@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/buremba/1mcp/compare/v1.0.0...v1.1.0) (2025-11-22)
+
+
+### Features
+
+* add new calculator tools to the AI SDK example and refactor React fragment to span in docs component. ([6d186c2](https://github.com/buremba/1mcp/commit/6d186c2fdf4a389cf3d2963f2c40c3c7e18be228))
+* replace sentry and context7 feature endpoints with github ([cf28e48](https://github.com/buremba/1mcp/commit/cf28e4802ee791ec0e87fb318a0a17f3cb654060))
+
 ## 1.0.0 (2025-11-22)
 
 
