@@ -19,7 +19,7 @@ const HeroSection = () => {
                     Safe Code Execution for AI Agents
                 </h1>
                 <p className="hero-subtitle">
-                    Execute AI agent code in the browser or server with WASM. Eliminate context bloat <a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank" rel="noopener noreferrer">by 96%</a>.
+                    Execute AI agent code in the browser or server with WASM. Eliminate context bloat <a href="#faq-why-96">by 96%</a>.
                 </p>
 
                 <div className="hero-cta">

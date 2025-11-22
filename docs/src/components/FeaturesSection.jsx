@@ -145,21 +145,21 @@ const InteractiveConfig = () => {
       title: "Secure proxy for network access",
       description: "Each session gets strict network, filesystem, and runtime limits. Define granular policies per request.",
       lineStart: 2,
-      lineEnd: 11
+      lineEnd: 7
     },
     {
       id: 'filesystem',
       title: "Sandboxed Filesystem",
       description: "Each session gets a private, ephemeral filesystem. OPFS is used in browser for persistent storage and you can mount local directories in server mode.",
-      lineStart: 12,
-      lineEnd: 22
+      lineStart: 8,
+      lineEnd: 14
     },
     {
       id: 'mcp',
       title: "Combine all MCP servers into 1mcp",
       description: "1mcp allows agents to call other MCP servers via JavaScript functions. It proxies all the requests with relay server.",
-      lineStart: 24,
-      lineEnd: 36
+      lineStart: 16,
+      lineEnd: 33
     }
   ];
 
@@ -198,9 +198,7 @@ const InteractiveConfig = () => {
   ]
 }`;
 
-  useEffect(() => {
-    Prism.highlightAll();
-  }, []);
+  // No useEffect for Prism.highlightAll() needed
 
   return (
     <div>      <div className="section-header" style={{ textAlign: 'center' }}><h2 className="section-title">Specification</h2></div>
@@ -233,7 +231,12 @@ const InteractiveConfig = () => {
             </div>
             <div className="code-content-wrapper">
               <pre className="code-content">
-                <code className="language-json">{code.trim()}</code>
+                <code className="language-json">
+                  <HighlightedCode
+                    code={code.trim()}
+                    language="json"
+                  />
+                </code>
               </pre>
               {hoveredSection && (
                 <div className="code-overlay">

@@ -1,11 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './FAQSection.css';
 
-const FAQItem = ({ question, answer, comparison }) => {
+const FAQItem = ({ id, question, answer, comparison }) => {
     const [isOpen, setIsOpen] = useState(false);
 
+    useEffect(() => {
+        if (id && window.location.hash === `#${id}`) {
+            setIsOpen(true);
+            // Small delay to ensure DOM is ready
+            setTimeout(() => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+    }, [id]);
+
     return (
-        <div className={`faq-item ${isOpen ? 'open' : ''}`}>
+        <div id={id} className={`faq-item ${isOpen ? 'open' : ''}`}>
             <button className="faq-question" onClick={() => setIsOpen(!isOpen)}>
                 <span>{question}</span>
                 <span className="faq-icon">{isOpen ? '−' : '+'}</span>
@@ -26,7 +39,8 @@ const FAQSection = () => {
 
             <div className="faq-grid">
                 <FAQItem
-                    question="How is 1mcp different from Anthropic's code execution approach?"
+                    id="faq-why-96"
+                    question="Why 96%?"
                     answer={
                         <>
                             <p>We're actually <strong>complementary</strong> to Anthropic's approach! In their <a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank" rel="noopener noreferrer">blog post about code execution with MCP</a>, Anthropic shows how chaining tool calls in code reduces token usage by up to 96% compared to sequential tool calls.</p>
