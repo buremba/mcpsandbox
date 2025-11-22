@@ -1,15 +1,16 @@
 import React from 'react';
 import DemoSection from './DemoSection';
+import IntegrationDropdown from './IntegrationDropdown';
 
 const HeroSection = () => {
     return (
         <section className="hero-section">
             <div className="hero-content">
                 <h1 className="hero-title">
-                    Let your agent write code and execute code directly in the browser
+                    Give Your AI Agent Coding Superpowers
                 </h1>
                 <p className="hero-subtitle">
-                    Avoid context bloating. Cut token usage by up to 96%. Secure WASM execution.
+                    Avoid context bloating. Cut token usage by up to 96%.
                 </p>
                 <div className="hero-cta">
                     <a href="https://github.com/1mcp/1mcp" target="_blank" rel="noopener noreferrer" className="github-button">
@@ -18,7 +19,7 @@ const HeroSection = () => {
                         </svg>
                         Star on GitHub
                     </a>
-                    {/* <a href="#" className="secondary-button">Read the Docs</a> */}
+                    <IntegrationDropdown />
                 </div>
             </div>
             <div className="hero-demo-wrapper">

@@ -37,7 +37,7 @@ const FeaturesSection = () => {
     <section id="features" className="features-section-large">
       <div className="features-container">
         <FeatureRow
-          title="Integrate with AI SDK"
+          title="Drop-in AI SDK Support"
           description="Turn your tools into a sandboxed MCP surface with a single function call. No extra glue code needed."
           icon="🤖"
           code={`
@@ -55,8 +55,8 @@ const result = await generateText({
         />
 
         <FeatureRow
-          title="Client side sandboxing"
-          description="Offload compute to the client. Execute code safely in a browser worker via WebAssembly, saving server costs and reducing latency."
+          title="Hybrid sandboxing (browser / server)"
+          description="Offload compute to the client. Execute code safely in a browser worker via WebAssembly. It's more secure, scalable, and cost-effective compared to cloud sandboxing."
           icon="⚡"
           reversed={true}
           code={`
@@ -96,23 +96,14 @@ const policy = {
         />
 
         <FeatureRow
-          title="Standalone MCP Server"
-          description="Run it as a standalone MCP server. Connect any MCP-compatible client (Claude Desktop, Cursor, etc.) directly to your secure sandbox."
+          title="Combine all MCP servers into one tool"
+          description="1mcp allows agents to call other MCP servers via Javascript functions, it proxies all the requests to your other MCP servers."
           icon="🔌"
           reversed={true}
           code={`
 # Run the server
-npx -y @1mcp/server
-
-# Connect from Claude Desktop
-{
-  "mcpServers": {
-    "1mcp": {
-      "command": "npx",
-      "args": ["-y", "@1mcp/server"]
-    }
-  }
-}
+echo 'example_json_config' > mcp.config.json
+npx 
 `}
         />
       </div>
