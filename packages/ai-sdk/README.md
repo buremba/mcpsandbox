@@ -30,7 +30,9 @@ import * as myTools from '@/tools'; // Your 50 AI SDK tools
 
 // Convert tools once (can be singleton)
 const { client, serverUrl } = await convertTo1McpTools(myTools, {
-  limits: { timeoutMs: 5000 }
+  policy: {
+    limits: { timeoutMs: 5000 }
+  }
 });
 
 export async function POST(req: Request) {
