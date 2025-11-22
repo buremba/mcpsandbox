@@ -186,14 +186,9 @@ const InteractiveConfig = () => {
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "/private/tmp"]
     },
     {
-      "name": "sentry",
+      "name": "github",
       "transport": "http",
-      "endpoint": "https://mcp.sentry.dev/mcp"
-    },
-    {
-      "name": "context7",
-      "transport": "http",
-      "endpoint": "https://api.context7.com/mcp"
+      "endpoint": "https://mcp.github.dev/mcp"
     }
   ]
 }`;
