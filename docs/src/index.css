@@ -25,6 +25,12 @@ body {
   /* Removed centering for landing page layout */
 }
 
+a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
 /* Landing Page Styles */
 
 .app-wrapper {
@@ -65,10 +71,7 @@ body {
 }
 
 .nav-links a {
-  color: var(--text-secondary);
-  text-decoration: none;
   font-size: 0.9rem;
-  transition: color 0.2s;
 }
 
 .nav-links a:hover {
@@ -114,6 +117,8 @@ body {
 
 .hero-cta {
   display: flex;
+  flex-direction: row;
+  align-items: flex-start;
   gap: 1rem;
   margin-top: 1rem;
 }
@@ -179,6 +184,98 @@ body {
   margin: 0 auto;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Quickstart Box */
+.quickstart-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  max-width: 600px;
+}
+
+.quickstart-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.command-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.command-box code {
+  flex: 1;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.95rem;
+  color: var(--accent-blue);
+}
+
+.copy-button {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.copy-button:hover {
+  background: var(--border-color);
+}
+
+.quickstart-hint {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Value Props Strip */
+.value-props {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.value-prop {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.value-icon {
+  font-size: 1.25rem;
+}
+
+.primary-button {
+  background: var(--accent-blue);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.primary-button:hover {
+  opacity: 0.9;
 }
 
 /* Demo Section Overrides */
@@ -289,6 +386,15 @@ body {
   overflow-x: auto;
 }
 
+.code-filename {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-left: 1rem;
+  font-family: 'SFMono-Regular', Consolas, monospace;
+  display: flex;
+  align-items: center;
+}
+
 /* Responsive Features */
 @media (max-width: 900px) {
 
@@ -353,6 +459,23 @@ body {
     height: auto;
     max-height: 400px;
   }
+
+  .value-prop {
+    font-size: 0.8rem;
+  }
+
+  .command-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .copy-button {
+    width: 100%;
+  }
+
+  .quickstart-box {
+    max-width: 100%;
+  }
 }
 
 #root {
@@ -389,11 +512,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  height: 500px;
+  height: 410px;
   /* Fixed equal height */
   overflow-y: auto;
   /* Enable vertical scrolling */
   position: relative;
+  overscroll-behavior: contain;
+  /* Prevent scroll chaining - keeps page scroll working */
 }
 
 /* Custom Scrollbar */

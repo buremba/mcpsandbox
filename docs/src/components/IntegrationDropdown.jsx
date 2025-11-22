@@ -1,54 +1,49 @@
 import React, { useState, useRef, useEffect } from 'react';
-import IntegrationModal from './IntegrationModal';
 import './IntegrationDropdown.css';
 
 const INTEGRATIONS = [
-    { id: 'ai-sdk', label: 'AI SDK', type: 'scroll' },
     {
-        id: 'claude',
+        id: 'ai-sdk',
+        label: 'AI SDK',
+        type: 'link',
+        linkTo: '#features'
+    },
+    {
+        id: 'react',
+        label: 'React',
+        type: 'link',
+        linkTo: '#features'
+    },
+    {
+        id: 'claude-code',
         label: 'Claude Code',
-        type: 'modal',
-        title: 'Connect to Claude Code',
+        type: 'command',
         language: 'bash',
-        content: `
-# Run directly with npx
-npx -y @1mcp/server
-`
+        content: `claude mcp add --transport stdio 1mcp npx -y 1mcp`
+    },
+    {
+        id: 'claude-desktop',
+        label: 'Claude Desktop',
+        type: 'instructions',
+        content: 'Open Claude Desktop → Settings → Connectors → Add Custom Connector. Name: 1mcp, Command: npx, Args: -y 1mcp'
     },
     {
         id: 'cursor',
         label: 'Cursor',
-        type: 'modal',
-        title: 'Connect to Cursor',
-        language: 'json',
-        content: `
-/* Add to your Cursor MCP settings */
-{
-  "mcpServers": {
-    "1mcp": {
-      "command": "npx",
-      "args": ["-y", "@1mcp/server"]
-    }
-  }
-}
-`
+        type: 'link',
+        linkTo: 'cursor://mcp/add?name=1mcp&command=npx&args=-y,1mcp'
     },
     {
-        id: 'mcp-client',
-        label: 'Any MCP Client',
-        type: 'modal',
-        title: 'Connect to any MCP Client',
+        id: 'amp',
+        label: 'Amp',
+        type: 'command',
         language: 'bash',
-        content: `
-# Use this command for any stdio-based MCP client
-npx -y @1mcp/server
-`
+        content: `amp mcp add 1mcp npx -y 1mcp`
     }
 ];
 
-const IntegrationDropdown = () => {
+const IntegrationDropdown = ({ selectedIntegration, onSelect }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedIntegration, setSelectedIntegration] = useState(null);
     const dropdownRef = useRef(null);
 
     useEffect(() => {
@@ -63,26 +58,38 @@ const IntegrationDropdown = () => {
     }, []);
 
     const handleSelect = (integration) => {
-        setIsOpen(false);
-
-        if (integration.type === 'scroll') {
-            const element = document.getElementById('features');
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
+        if (integration.type === 'link') {
+            if (integration.linkTo.startsWith('#')) {
+                const element = document.querySelector(integration.linkTo);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else {
+                // External link (like Cursor deeplink)
+                window.location.href = integration.linkTo;
             }
+            setIsOpen(false);
         } else {
-            setSelectedIntegration(integration);
+            onSelect(integration);
+            setIsOpen(false);
         }
     };
 
+    const getButtonText = () => {
+        if (selectedIntegration) {
+            return `Integrate ${selectedIntegration.label}`;
+        }
+        return 'Integrate';
+    };
+
     return (
-        <>
+        <div className="integration-wrapper">
             <div className="integration-dropdown" ref={dropdownRef}>
                 <button
                     className="integration-button"
                     onClick={() => setIsOpen(!isOpen)}
                 >
-                    Integrate
+                    {getButtonText()}
                     <svg
                         width="12"
                         height="12"
@@ -109,15 +116,7 @@ const IntegrationDropdown = () => {
                     </div>
                 )}
             </div>
-
-            <IntegrationModal
-                isOpen={!!selectedIntegration}
-                onClose={() => setSelectedIntegration(null)}
-                title={selectedIntegration?.title || ''}
-                content={selectedIntegration?.content || ''}
-                language={selectedIntegration?.language || 'json'}
-            />
-        </>
+        </div>
     );
 };
 

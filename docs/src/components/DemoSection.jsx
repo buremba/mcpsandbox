@@ -9,12 +9,14 @@ function DemoSection() {
   const [isRunning, setIsRunning] = useState(false);
   const [completedCount, setCompletedCount] = useState(0);
   const [currentDemoIndex, setCurrentDemoIndex] = useState(0);
+  const [restartCount, setRestartCount] = useState(0);
 
   const currentDemo = DEMOS[currentDemoIndex];
 
   const startDemo = () => {
     setIsRunning(true);
     setCompletedCount(0);
+    setRestartCount(prev => prev + 1);
   };
 
   const handleSelectDemo = (index) => {
@@ -57,7 +59,7 @@ function DemoSection() {
             <span>Without 1mcp</span>
           </div>
           <ProcessView
-            key={`standard-${currentDemo.id}`}
+            key={`standard-${currentDemo.id}-${restartCount}`}
             mode="standard"
             stepsData={currentDemo.standardSteps}
             isRunning={isRunning}
@@ -67,10 +69,10 @@ function DemoSection() {
 
         <div className="column" style={{ paddingTop: '0' }}>
           <div className="column-header">
-            <span>With 1MCP</span>
+            <span>With 1mcp</span>
           </div>
           <ProcessView
-            key={`optimized-${currentDemo.id}`}
+            key={`optimized-${currentDemo.id}-${restartCount}`}
             mode="optimized"
             stepsData={currentDemo.optimizedSteps}
             isRunning={isRunning}

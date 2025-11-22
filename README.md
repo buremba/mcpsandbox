@@ -2,6 +2,8 @@
 
 1mcp lets agents compose MCP tool calls and run code safely via WASM, cutting token usage by [up to 96%](https://www.anthropic.com/engineering/code-execution-with-mcp).
 
+[![Demo](./docs/public/demo.gif)](https://1mcp.dev)
+
 ## How It Works
 
 1mcp maps every MCP tool to sandboxed TypeScript stubs `mcp__mcpName_toolName.ts.d`, exposing only 4 core tools to the LLM. Instead of making individual MCP tool calls, agents write JavaScript code that chains MCP calls together, reducing token usage significantly. Instead of LLM making two separate tool calls, it can execute code, 1mcp dispatches calls, takes care of retries automatically. 

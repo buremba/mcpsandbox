@@ -3,8 +3,9 @@ import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-typescript';
+import 'prismjs/components/prism-json';
 
-const FeatureRow = ({ title, description, icon, code, language = 'javascript', reversed }) => {
+const FeatureRow = ({ title, description, icon, code, language = 'javascript', reversed, fileName }) => {
   useEffect(() => {
     Prism.highlightAll();
   }, [code]);
@@ -19,9 +20,12 @@ const FeatureRow = ({ title, description, icon, code, language = 'javascript', r
       <div className="feature-code">
         <div className="code-window">
           <div className="code-header">
-            <span className="code-dot red"></span>
-            <span className="code-dot yellow"></span>
-            <span className="code-dot green"></span>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <span className="code-dot red"></span>
+              <span className="code-dot yellow"></span>
+              <span className="code-dot green"></span>
+            </div>
+            {fileName && <div className="code-filename">{fileName}</div>}
           </div>
           <pre className="code-content">
             <code className={`language-${language}`}>{code.trim()}</code>
@@ -39,7 +43,7 @@ const FeaturesSection = () => {
         <FeatureRow
           title="Drop-in AI SDK Support"
           description="Turn your tools into a sandboxed MCP surface with a single function call. No extra glue code needed."
-          icon="🤖"
+          fileName="App.tsx (Next.js)"
           code={`
 import { convertTo1MCP } from '@1mcp/ai-sdk';
 import { generateText } from 'ai';
@@ -55,9 +59,10 @@ const result = await generateText({
         />
 
         <FeatureRow
-          title="Hybrid sandboxing (browser / server)"
+          title="Browser sandboxing with WASM"
           description="Offload compute to the client. Execute code safely in a browser worker via WebAssembly. It's more secure, scalable, and cost-effective compared to cloud sandboxing."
           icon="⚡"
+          fileName="YourClientReactHome.tsx"
           reversed={true}
           code={`
 import { RelayBrowserClient } from '@1mcp/ai-sdk/browser';
@@ -77,33 +82,52 @@ client.onCapsule(async (capsule) => {
           title="Secure proxy for network access"
           description="Each session gets strict network, filesystem, and runtime limits. Define granular policies per request, not just global project settings."
           icon="🔒"
+          fileName="1mcp.config.json"
+          language="json"
           code={`
-const policy = {
-  network: { 
-    allowedDomains: ["*.googleapis.com"],
-    denyLocalhost: true 
-  },
-  filesystem: { 
-    writable: ["/tmp"],
-    maxFileSize: 1024 * 1024 
-  },
-  limits: { 
-    memMb: 512, 
-    executionTimeMs: 5000 
+{
+  "policy": {
+    "network": { 
+      "allowedDomains": ["*.googleapis.com"],
+      "denyLocalhost": true 
+    },
+    "filesystem": { 
+      "writable": ["/tmp"],
+      "maxFileSize": 1048576
+    },
+    "limits": { 
+      "memMb": 512, 
+      "executionTimeMs": 5000 
+    }
   }
-};
+}
 `}
         />
 
         <FeatureRow
-          title="Combine all MCP servers into one tool"
-          description="1mcp allows agents to call other MCP servers via Javascript functions, it proxies all the requests to your other MCP servers."
+          title="Combine all MCP servers into 1mcp"
+          description="1mcp allows agents to call other MCP servers via JavaScript functions. It proxies all the requests to your other MCP servers."
           icon="🔌"
           reversed={true}
+          fileName="1mcp.config.json"
+          language="json"
           code={`
-# Run the server
-echo 'example_json_config' > mcp.config.json
-npx 
+{
+  "mcps": [
+    {
+      "name": "github",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    },
+    {
+      "name": "filesystem",
+      "transport": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
+    }
+  ]
+}
 `}
         />
       </div>

@@ -13,10 +13,6 @@ const StepCard = ({ number, title, description, icon }) => (
 const HowItWorksSection = () => {
     return (
         <section className="how-it-works-section">
-            <div className="section-header">
-                <h2 className="section-title">How It Works</h2>
-                <p className="section-subtitle">Three steps to browser-based agent execution</p>
-            </div>
 
             <div className="steps-container">
                 <StepCard

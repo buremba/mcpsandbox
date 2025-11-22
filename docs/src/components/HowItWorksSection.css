@@ -1,7 +1,7 @@
 /* How It Works Section */
 .how-it-works-section {
-    padding: 6rem 2rem;
-    background-color: var(--background-color);
+    padding: 0 2rem 4rem;
+    background-color: var(--bg-primary);
     text-align: center;
 }
 

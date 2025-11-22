@@ -11,7 +11,10 @@ const ProcessView = ({ mode, isRunning, onComplete, stepsData }) => {
 
     useEffect(() => {
         if (bottomRef.current) {
-            bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            const container = bottomRef.current.closest('.column');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
         }
     }, [steps]);
 
