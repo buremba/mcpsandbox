@@ -5,16 +5,22 @@ const FAQItem = ({ id, question, answer, comparison }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     useEffect(() => {
-        if (id && window.location.hash === `#${id}`) {
-            setIsOpen(true);
-            // Small delay to ensure DOM is ready
-            setTimeout(() => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 100);
-        }
+        const checkHash = () => {
+            if (id && window.location.hash === `#${id}`) {
+                setIsOpen(true);
+                // Small delay to ensure DOM is ready
+                setTimeout(() => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
+        };
+
+        checkHash();
+        window.addEventListener('hashchange', checkHash);
+        return () => window.removeEventListener('hashchange', checkHash);
     }, [id]);
 
     return (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-javascript';
@@ -6,6 +6,10 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-bash';
 import HowItWorksSection from './HowItWorksSection';
+
+// Prevent Prism from automatically highlighting code blocks on the page
+// This avoids conflicts with React's DOM management which causes "removeChild" errors
+Prism.manual = true;
 
 const HighlightedCode = ({ code, language = 'javascript', clickableWord, tooltipText, scrollToId }) => {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -330,7 +334,7 @@ const UnifiedSDKFeature = () => {
       tooltipText: "Click to see full config spec",
       code: `
 import { convertTo1MCP } from '@onemcp/ai-sdk';
-import { generateText }s from 'ai';
+import { generateText } from 'ai';
 
 const { client } = await convertTo1MCP(tools, config);
 
