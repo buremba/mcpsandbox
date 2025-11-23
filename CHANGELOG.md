@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/buremba/1mcp/compare/v1.1.0...v1.1.1) (2025-11-23)
+
+
+### Bug Fixes
+
+* Prevent Prism auto-highlighting conflicts in Features section, enhance FAQ hash-based scrolling to react to URL changes, and correct a typo. ([a2a9ce4](https://github.com/buremba/1mcp/commit/a2a9ce48928a96c9e14f3c62692519decd394dd0))
+
 ## [1.1.0](https://github.com/buremba/1mcp/compare/v1.0.0...v1.1.0) (2025-11-22)
 
 
