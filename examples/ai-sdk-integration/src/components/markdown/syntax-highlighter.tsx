@@ -18,16 +18,19 @@ export function SyntaxHighlighter({
 		setMounted(true);
 	}, []);
 
+	// Map tool_code to javascript for better highlighting
+	const effectiveLanguage = language === "tool_code" ? "javascript" : (language || "text");
+
 	const highlighted = useShikiHighlighter(
 		code,
-		language || "text",
+		effectiveLanguage,
 		{
 			light: "github-light",
 			dark: "github-dark",
 		}
 	);
 
-	if (!mounted || !highlighted) {
+	if (!mounted || !highlighted || typeof highlighted !== 'string') {
 		// Fallback to plain code block during SSR or initial render
 		return (
 			<pre className={`${className || ""} block p-4 rounded bg-muted overflow-x-auto`}>

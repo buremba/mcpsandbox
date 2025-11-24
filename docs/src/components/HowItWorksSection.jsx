@@ -25,24 +25,16 @@ const HowItWorksSection = () => {
                 <div className="step-connector">→</div>
 
                 <StepCard
-                    title="🛡️ 1mcp Relays"
-                    description="The relay server bundles the code into a secure, signed capsule with strict policy enforcement."
+                    title="🛡️ 1mcp"
+                    description="1mcp packages dependencies into a secure bundle, reverse proxies to your MCPs, and enforces policies."
                 />
 
-                <div className="step-connector">→</div>
+                <div className="step-connector">↔</div>
 
-                <div className="step-column">
-                    <StepCard
-                        title="🌐 Browser Executes"
-                        description="For web apps: The client executes it safely in a local WASM worker."
-                        className="step-card-small"
-                    />
-                    <StepCard
-                        title="☁️ Server Executes"
-                        description="For backend: The server executes it in a sandboxed WASM environment."
-                        className="step-card-small"
-                    />
-                </div>
+                <StepCard
+                    title="🌐 User Browser"
+                    description="The client executes generated Javascript code safely in a local WASM worker with QuickJS."
+                />
             </div>
         </section>
     );

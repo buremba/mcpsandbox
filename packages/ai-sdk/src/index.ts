@@ -6,15 +6,15 @@
 
 import type { CoreTool } from "ai";
 import { experimental_createMCPClient } from "ai";
-import { startEmbeddedRelay } from "./server-manager.js";
-import { writeToolsToWorkDir } from "./tool-serializer.js";
+// import { startEmbeddedRelay } from "./server-manager.js";
+// import { writeToolsToWorkDir } from "./tool-serializer.js";
 
 // Import RelayConfig type - will be resolved at build time
 import type { RelayConfig } from "@onemcp/shared";
 
 // HTTP MCP Transport (fallback implementation if not exported by AI SDK)
 class HttpMCPTransport {
-	constructor(public config: { url: string }) {}
+	constructor(public config: { url: string }) { }
 }
 
 export interface ConvertOptions extends Partial<RelayConfig> {
@@ -84,6 +84,25 @@ export async function convertTo1McpTools(
 ): Promise<ConvertResult> {
 	const { relayUrl, port, ...config } = options;
 
+	// Check for Browser-Only mode eligibility
+	const isBrowser = typeof window !== "undefined";
+	const hasOnlyHttpMcps = !config.mcps || config.mcps.every((m) => m.transport === "http");
+
+	if (isBrowser && !relayUrl && hasOnlyHttpMcps) {
+		// Browser-Only mode
+		// We need to dynamically import BrowserDirectClient to avoid bundling it in Node
+		const { BrowserDirectClient } = await import("./browser/direct-client.js");
+		// TODO: Allow configuring worker URL
+		const workerUrl = (config as any).workerUrl || "/relay-worker.js";
+		const client = new BrowserDirectClient(aiSdkTools, config, workerUrl);
+
+		return {
+			client,
+			serverUrl: "browser://local", // Virtual URL
+			cleanup: async () => await client.close(),
+		};
+	}
+
 	if (relayUrl) {
 		// Connect to external relay-mcp server
 		return await connectToExternalRelay(relayUrl, aiSdkTools);
@@ -129,12 +148,14 @@ async function startEmbeddedMode(
 	options: { port?: number; config: Partial<RelayConfig> },
 ): Promise<ConvertResult> {
 	// Start embedded server
+	const { startEmbeddedRelay } = await import("./server-manager.js");
 	const server = await startEmbeddedRelay({
 		port: options.port,
 		config: options.config,
 	});
 
 	// Write AI SDK tools to server's working directory
+	const { writeToolsToWorkDir } = await import("./tool-serializer.js");
 	await writeToolsToWorkDir(server.workDir, aiSdkTools);
 
 	// Create MCP transport to embedded server

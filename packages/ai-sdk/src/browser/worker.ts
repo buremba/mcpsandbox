@@ -8,11 +8,11 @@
 import type { Capsule } from "@onemcp/shared";
 import { OPFSVirtualFilesystem } from "./opfs-vfs.js";
 import { BrowserLayerExtractor } from "./layer-extractor.js";
-import { RUNTIME_CDNS, setupConsole, injectVFSFunctions, dumpResult } from "@onemcp/shared";
+import { RUNTIME_CDNS, setupConsole, injectVFSFunctions, dumpResult, injectMCPProxies } from "@onemcp/shared";
 
 interface WorkerMessage {
-	type: "execute";
-	capsule: {
+	type: "execute" | "executeRaw" | "mcpCallResult";
+	capsule?: {
 		runId: string;
 		manifest: Capsule;
 		urls: {
@@ -20,18 +20,40 @@ interface WorkerMessage {
 			fsLayers: string[];
 		};
 	};
-}
-
-interface ResultMessage {
-	type: "result";
-	data: {
+	// For executeRaw
+	payload?: {
 		runId: string;
-		type: "stdout" | "stderr" | "exit" | "error";
-		chunk?: string;
-		exitCode?: number;
+		code: string;
+		npm?: any;
+		mcpConfigs?: any[];
+	};
+	// For mcpCallResult
+	result?: {
+		callId: string;
+		success: boolean;
+		data?: any;
 		error?: string;
 	};
 }
+
+interface ResultMessage {
+	type: "result" | "mcpCall"; // Added mcpCall type
+	data: {
+		runId: string;
+		type?: "stdout" | "stderr" | "exit" | "error";
+		chunk?: string;
+		exitCode?: number;
+		error?: string;
+		// For mcpCall
+		callId?: string;
+		mcpName?: string;
+		method?: string;
+		params?: any;
+	};
+}
+
+// Pending MCP calls: callId -> { resolve, reject }
+const pendingMcpCalls = new Map<string, { resolve: (val: any) => void; reject: (err: any) => void }>();
 
 /**
  * Execute a capsule in WASM runtime
@@ -404,12 +426,107 @@ async function executePython(
 
 // Worker message handler
 self.addEventListener("message", async (event: MessageEvent<WorkerMessage>) => {
-	const { type, capsule } = event.data;
+	const { type, capsule, payload, result } = event.data;
 
 	if (type === "execute") {
-		await executeCapsule(capsule);
+		await executeCapsule(capsule!);
+	} else if (type === "executeRaw") {
+		// Raw execution mode for Browser-Only
+		const { runId, code, mcpConfigs } = payload!;
+		try {
+			// Load QuickJS if needed
+			const quickjs = await loadQuickJS();
+			const vm = quickjs.newContext();
+
+			try {
+				// Setup console
+				setupConsole(vm as any, {
+					onStdout: (chunk: string) => {
+						postMessage({
+							type: "result",
+							data: { runId, type: "stdout", chunk }
+						} satisfies ResultMessage);
+					},
+					onStderr: (chunk: string) => {
+						postMessage({
+							type: "result",
+							data: { runId, type: "stderr", chunk }
+						} satisfies ResultMessage);
+					}
+				});
+
+				// Inject MCP proxies if configured
+				if (mcpConfigs && mcpConfigs.length > 0) {
+					injectMCPProxies({
+						vm,
+						mcpConfigs,
+						callTool: (mcpName, method, params) => {
+							const callId = Math.random().toString(36).slice(2);
+
+							// Send call to main thread
+							postMessage({
+								type: "mcpCall",
+								data: {
+									runId,
+									callId,
+									mcpName,
+									method,
+									params
+								}
+							});
+
+							// Return promise that resolves when main thread responds
+							return new Promise((resolve, reject) => {
+								pendingMcpCalls.set(callId, { resolve, reject });
+							});
+						}
+					});
+				}
+
+				// Execute
+				const result = vm.evalCode(code);
+
+				if (result.error) {
+					const error = vm.dump(result.error);
+					result.error.dispose();
+					throw new Error(error);
+				}
+
+				const value = result.value ? dumpResult(vm as any, result.value) : undefined;
+				result.value.dispose();
+
+				// Send success exit
+				postMessage({
+					type: "result",
+					data: { runId, type: "exit", exitCode: 0 }
+				} satisfies ResultMessage);
+
+			} finally {
+				vm.dispose();
+			}
+		} catch (error) {
+			postMessage({
+				type: "result",
+				data: {
+					runId,
+					type: "error",
+					error: error instanceof Error ? error.message : String(error)
+				}
+			} satisfies ResultMessage);
+		}
+	} else if (type === "mcpCallResult") {
+		const { callId, success, data, error } = result!;
+		const pending = pendingMcpCalls.get(callId);
+		if (pending) {
+			if (success) {
+				pending.resolve(data);
+			} else {
+				pending.reject(new Error(error));
+			}
+			pendingMcpCalls.delete(callId);
+		}
 	}
 });
 
 // Export for type checking
-export type {};
+export type { };

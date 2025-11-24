@@ -13,7 +13,7 @@ export class QuickJSRuntime {
     private vfs?: VirtualFilesystem,
     private mcpManager?: MCPManager,
     private mcpConfigs?: MCPServerConfig[]
-  ) {}
+  ) { }
 
   async execute(
     code: string,
@@ -116,67 +116,18 @@ export class QuickJSRuntime {
 
   /**
    * Inject MCP proxy objects into QuickJS global scope
-   *
-   * Dynamically generates proxy objects based on mcpConfigs:
-   * const result = await github.getUser({ username: 'foo' });
-   * const issues = await github.listIssues({ repo: 'bar' });
    */
   private injectMCPProxies(vm: any) {
     const mcpManager = this.mcpManager!;
     const mcpConfigs = this.mcpConfigs!;
 
-    // Create low-level __mcp_call function that bridges to MCPManager
-    const mcpCallHandle = vm.newFunction("__mcp_call", (mcpNameHandle: any, methodHandle: any, paramsHandle: any) => {
-      const mcpName = vm.dump(mcpNameHandle);
-      const method = vm.dump(methodHandle);
-      const params = JSON.parse(vm.dump(paramsHandle) || '{}');
-
-      // Call MCPManager to proxy the request
-      const promise = mcpManager.callTool(mcpName, method, params);
-
-      return vm.newPromise((resolve: any, reject: any) => {
-        promise.then(
-          (result) => {
-            // Return result as JSON string
-            resolve(vm.newString(JSON.stringify(result)));
-          },
-          (error) => {
-            reject(vm.newString(String(error)));
-          }
-        );
-      });
+    // Use shared implementation
+    const { injectMCPProxies } = require("@onemcp/shared");
+    injectMCPProxies({
+      vm,
+      mcpConfigs,
+      callTool: (mcpName, method, params) => mcpManager.callTool(mcpName, method, params)
     });
-
-    vm.setProp(vm.global, "__mcp_call", mcpCallHandle);
-
-    // Generate proxy code for each MCP server
-    const proxyCode = mcpConfigs.map((mcpConfig) => {
-      const mcpName = mcpConfig.name;
-
-      return `
-        // MCP proxy for '${mcpName}'
-        globalThis.${mcpName} = new Proxy({}, {
-          get: (target, method) => {
-            return async function(params = {}) {
-              const resultJson = await __mcp_call('${mcpName}', method, JSON.stringify(params));
-              return JSON.parse(resultJson);
-            };
-          }
-        });
-      `;
-    }).join('\n');
-
-    // Execute the proxy generation code
-    const result = vm.evalCode(proxyCode);
-    if (result.error) {
-      const error = vm.dump(result.error);
-      result.error.dispose();
-      throw new Error(`Failed to inject MCP proxies: ${error}`);
-    }
-    result.value.dispose();
-
-    // Clean up
-    mcpCallHandle.dispose();
   }
 
   /**
