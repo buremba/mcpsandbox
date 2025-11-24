@@ -124,7 +124,7 @@ const FeatureRow = ({ title, description, icon, code, language = 'javascript', r
             {fileName && <div className="code-filename">{fileName}</div>}
           </div>
           <pre className="code-content">
-            <code className={`language-${language}`}>
+            <code className={`language-${language} no-highlight`}>
               <HighlightedCode
                 code={code.trim()}
                 language={language}
@@ -230,7 +230,7 @@ const InteractiveConfig = () => {
             </div>
             <div className="code-content-wrapper">
               <pre className="code-content">
-                <code className="language-json">
+                <code className="language-json no-highlight">
                   <HighlightedCode
                     code={code.trim()}
                     language="json"
@@ -438,7 +438,7 @@ npx 1mcp serve --config 1mcp.config.json
               <div className="code-filename">{activeFeature.fileName}</div>
             </div>
             <pre className="code-content">
-              <code className={`language-${activeFeature.language}`}>
+              <code className={`language-${activeFeature.language} no-highlight`}>
                 <HighlightedCode
                   key={activeFeature.id}
                   code={activeFeature.code.trim()}

@@ -1,16 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-javascript';
 
 const StepItem = ({ type, content, isThinking, language }) => {
     // type: 'thinking' | 'tool-call' | 'result' | 'final'
-
-    useEffect(() => {
-        if (language) {
-            Prism.highlightAll();
-        }
-    }, [content, language]);
 
     let borderColor = 'var(--border-color)';
     let icon = '○';
@@ -37,6 +31,12 @@ const StepItem = ({ type, content, isThinking, language }) => {
     }
 
     const isCode = !!language;
+
+    const getHighlightedCode = () => {
+        if (!language || !content) return content;
+        const grammar = Prism.languages[language] || Prism.languages.javascript;
+        return Prism.highlight(content, grammar, language);
+    };
 
     return (
         <div className="step-item" style={{
@@ -76,7 +76,11 @@ const StepItem = ({ type, content, isThinking, language }) => {
                 }}>
                     {isCode ? (
                         <pre style={{ margin: 0, padding: 0, background: 'transparent', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                            <code className={`language-${language}`} style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{content}</code>
+                            <code
+                                className={`language-${language}`}
+                                style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+                                dangerouslySetInnerHTML={{ __html: getHighlightedCode() }}
+                            />
                         </pre>
                     ) : (
                         <>
