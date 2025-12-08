@@ -49,16 +49,10 @@ const FAQSection = () => {
                     question="Why 96%?"
                     answer={
                         <>
-                            <p>We're actually <strong>complementary</strong> to Anthropic's approach! In their <a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank" rel="noopener noreferrer">blog post about code execution with MCP</a>, Anthropic shows how chaining tool calls in code reduces token usage by up to 96% compared to sequential tool calls.</p>
-                            <p><strong>The challenge:</strong> Their example requires custom Cloudflare Workers integration per project. <strong>Our solution:</strong> 1mcp provides the same 96% token reduction out-of-the-box for ANY MCP server, with:</p>
-                            <ul>
-                                <li>✅ Zero config - works with any MCP server immediately</li>
-                                <li>✅ Standardized tooling (run_js, read, write, search)</li>
-                                <li>✅ Browser OR server-side execution (not just edge)</li>
-                                <li>✅ Built-in policy enforcement and sandboxing</li>
-                                <li>✅ No custom workers needed per integration</li>
-                            </ul>
-                            <p>Think of it as: Anthropic proved the pattern saves 96% tokens, we made it universally accessible.</p>
+                            <p>If you have too many MCP tools (>10) available in your agents at a time, the MCP clients and agents include all the tool info in the context by default, no matter what your initial prompt is.</p>
+                            <p>This approach is not scalable as user prompt usually don't require all the tools available and often make LLMs get confused & distracted from the initial user prompt.</p>
+                            <p>1mcp gives the MCP clients a single tool to proxy your MCP tools in a Javascript interface and a search tool for the LLM to find out all the relevant tools for the user prompt.</p>
+                            <p>Anthropic, who company invented MCP recently released <a href="https://www.anthropic.com/engineering/code-execution-with-mcp" target="_blank" rel="noopener noreferrer">a blog post about code execution with MCP</a> that explains how chaining tool calls in code reduces token usage by up to 96% compared to sequential tool calls.</p>
                         </>
                     }
                 />
