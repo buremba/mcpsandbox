@@ -27,6 +27,7 @@ export const DEMOS = [
             {
                 type: 'tool-call', language: 'javascript', content: `const cities = ['London', 'New York', 'Tokyo', 'Paris', 'Berlin'];
 const temps = await Promise.all(
+// your MCP tool is triggered async
  cities.map(c => mcp.getWeather(c))
 );
 temps.reduce((a, b) => a + b, 0) / temps.length;` },
