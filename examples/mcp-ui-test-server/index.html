@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP Apps UI Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #333; }
+    .info {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .info h3 { margin-top: 0; color: #0066ff; }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+    .events {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .events h3 { margin-top: 0; color: #28a745; }
+    .event-item {
+      padding: 8px 12px;
+      margin: 4px 0;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .event-intent { border-left: 3px solid #0066ff; }
+    .event-tool { border-left: 3px solid #28a745; }
+  </style>
+</head>
+<body>
+  <h1>MCP Apps UI Test</h1>
+
+  <div class="info">
+    <h3>Instructions</h3>
+    <p>This page tests the widget's MCP Apps support. Click the chat button in the bottom-right corner.</p>
+    <p><strong>Try these prompts:</strong></p>
+    <ul>
+      <li>"Show me the counter" - triggers the counter tool with UI</li>
+      <li>"Open the search form" - triggers the search_form tool with UI</li>
+    </ul>
+    <p><strong>Note:</strong> Using Chrome AI provider (no API key needed)</p>
+  </div>
+
+  <div class="events" id="events">
+    <h3>MCP Apps Events</h3>
+    <div id="eventList">
+      <div class="event-item">Waiting for events...</div>
+    </div>
+  </div>
+
+  <div id="root"></div>
+
+  <script type="module" src="/main.tsx"></script>
+</body>
+</html>

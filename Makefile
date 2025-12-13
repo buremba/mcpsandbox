@@ -2,42 +2,38 @@
 
 help:
 	@echo "relay-mcp development commands:"
-	@echo "  make init        - Initialize project (install deps, build packages)"
-	@echo "  make dev         - Start development server with hot reload"
-	@echo "  make build       - Build all packages"
-	@echo "  make test        - Run tests"
-	@echo "  make format      - Format code with Biome"
-	@echo "  make lint        - Lint code with Biome"
-	@echo "  make clean       - Clean build artifacts"
+	@echo "  make init    - Initialize project (install deps, build packages)"
+	@echo "  make dev     - Start relay server + demo (pnpm run dev)"
+	@echo "  make build   - Build all packages"
+	@echo "  make test    - Run tests"
+	@echo "  make format  - Format code with Biome"
+	@echo "  make lint    - Lint code with Biome"
+	@echo "  make clean   - Clean build artifacts"
 
 init:
-	@echo "📦 Installing dependencies..."
-	@npm install
-	@echo "🔨 Building all packages..."
-	@$(MAKE) build
-	@echo "✅ Initialization complete!"
+	@echo "Installing dependencies..."
+	@pnpm install
+	@echo "Building all packages..."
+	@pnpm run build
+	@echo "Initialization complete!"
 
 build:
-	@echo "Building packages in dependency order..."
-	@cd packages/shared && npm run build
-	@cd packages/server && npm run build
-	@echo "✅ All packages built!"
+	@pnpm run build
 
 dev:
-	@echo "🚀 Starting development server..."
-	@cd packages/server && npm run dev
+	@pnpm run dev
 
 test:
-	@npm test
+	@pnpm test
 
 format:
-	@npm run format
+	@pnpm run format
 
 lint:
-	@npm run lint:fix
+	@pnpm run lint:fix
 
 clean:
-	@echo "🧹 Cleaning build artifacts..."
+	@echo "Cleaning build artifacts..."
 	@find packages -type d -name "dist" -exec rm -rf {} + 2>/dev/null || true
 	@rm -rf .relay/capsules/*
-	@echo "✅ Clean complete!"
+	@echo "Clean complete!"

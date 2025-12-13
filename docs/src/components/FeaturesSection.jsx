@@ -6,6 +6,7 @@ import 'prismjs/components/prism-typescript';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-bash';
 import HowItWorksSection from './HowItWorksSection';
+import InteractiveConfig from './InteractiveConfig';
 
 // Prevent Prism from automatically highlighting code blocks on the page
 // This avoids conflicts with React's DOM management which causes "removeChild" errors
@@ -135,185 +136,6 @@ const FeatureRow = ({ title, description, icon, code, language = 'javascript', r
             </code>
           </pre>
         </div>
-      </div>
-    </div>
-  );
-};
-
-const InteractiveConfig = () => {
-  const [hoveredSection, setHoveredSection] = React.useState(null);
-
-  const sections = [
-    {
-      id: 'network',
-      title: "Secure proxy for network access",
-      description: "Each session gets strict network, filesystem, and runtime limits. Define granular policies per request.",
-      lineStart: 2,
-      lineEnd: 7
-    },
-    {
-      id: 'filesystem',
-      title: "Sandboxed Filesystem",
-      description: "Each session gets a private, ephemeral filesystem. OPFS is used in browser for persistent storage and you can mount local directories in server mode.",
-      lineStart: 8,
-      lineEnd: 14
-    },
-    {
-      id: 'mcp',
-      title: "Combine all MCP servers into 1mcp",
-      description: "1mcp allows agents to call other MCP servers via JavaScript functions. It proxies all the requests with relay server.",
-      lineStart: 16,
-      lineEnd: 33
-    }
-  ];
-
-  const code = `{
-  "policy": {
-    "network": { 
-      "allowedDomains": ["*.googleapis.com"],
-      "blockPrivateRanges": true 
-    },
-    "limits": { "memMb": 512, "executionTimeMs": 5000 },
-    "filesystem": { 
-      "readonly": ["/workspace"],
-      "writable": ["/tmp", "/out"],
-      "mounts": [
-        { "source": "./data", "target": "/workspace", "readonly": true }
-      ]
-    }
-  },
-  "mcps": [
-    {
-      "name": "filesystem",
-      "transport": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/private/tmp"]
-    },
-    {
-      "name": "github",
-      "transport": "http",
-      "endpoint": "https://mcp.github.dev/mcp"
-    }
-  ]
-}`;
-
-  // No useEffect for Prism.highlightAll() needed
-
-  return (
-    <div>      <div className="section-header" style={{ textAlign: 'center' }}><h2 className="section-title">Specification</h2></div>
-      <div id="interactive-config" className="feature-row interactive-config-container">
-
-        <div className="feature-text">
-          <div className="config-sections">
-            {sections.map((section) => (
-              <div
-                key={section.id}
-                className={`config-section-item ${hoveredSection === section.id ? 'active' : ''} ${hoveredSection && hoveredSection !== section.id ? 'dimmed' : ''}`}
-                onMouseEnter={() => setHoveredSection(section.id)}
-                onMouseLeave={() => setHoveredSection(null)}
-              >
-                <h3 className="feature-title-large">{section.title}</h3>
-                <p className="feature-description-large" style={{ marginTop: '1rem' }}>{section.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="feature-code">
-          <div className="code-window">
-            <div className="code-header">
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <span className="code-dot red"></span>
-                <span className="code-dot yellow"></span>
-                <span className="code-dot green"></span>
-              </div>
-              <div className="code-filename">1mcp.config.json</div>
-            </div>
-            <div className="code-content-wrapper">
-              <pre className="code-content">
-                <code className="language-json no-highlight">
-                  <HighlightedCode
-                    code={code.trim()}
-                    language="json"
-                  />
-                </code>
-              </pre>
-              {hoveredSection && (
-                <div className="code-overlay">
-                  {sections.map((section) => {
-                    if (section.id !== hoveredSection) {
-                      return null;
-                    }
-                    return null;
-                  })}
-                </div>
-              )}
-              <style>{`
-              .code-content-wrapper {
-                position: relative;
-              }
-              .code-content {
-                transition: opacity 0.3s ease;
-              }
-              .config-section-item {
-                cursor: pointer;
-                margin-bottom: 2rem;
-                transition: opacity 0.2s;
-              }
-              .config-section-item.dimmed {
-                opacity: 0.4;
-              }
-              ${sections.map(section => `
-                .interactive-config-container.hover-${section.id} .token {
-                  opacity: 0.3;
-                  transition: opacity 0.3s ease;
-                }
-              `).join('')}
-            `}</style>
-              {hoveredSection && (() => {
-                const section = sections.find(s => s.id === hoveredSection);
-                if (!section) return null;
-
-                const paddingTop = 1.5; // rem
-                const lineHeight = 1.35; // rem
-
-                const topOffset = paddingTop + (section.lineStart - 1) * lineHeight;
-                const height = (section.lineEnd - section.lineStart + 1) * lineHeight;
-
-                return (
-                  <>
-                    <div
-                      className="dim-overlay"
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: `${topOffset}rem`,
-                        backgroundColor: 'rgba(0,0,0,0.6)',
-                        pointerEvents: 'none',
-                        transition: 'all 0.3s ease'
-                      }}
-                    />
-                    <div
-                      className="dim-overlay"
-                      style={{
-                        position: 'absolute',
-                        top: `${topOffset + height}rem`,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.6)',
-                        pointerEvents: 'none',
-                        transition: 'all 0.3s ease'
-                      }}
-                    />
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-        </div>
-
       </div>
     </div>
   );
@@ -464,7 +286,6 @@ const FeaturesSection = () => {
 
       <div className="features-container">
         <UnifiedSDKFeature />
-        <InteractiveConfig />
       </div>
     </section>
   );

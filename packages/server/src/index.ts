@@ -13,10 +13,12 @@ import { MCPManager } from "./services/mcp-manager.js";
 import { CapsuleCleanupService } from "./services/capsule-cleanup.js";
 import { StubGenerator } from "./services/stub-generator.js";
 import { NodeExecutor } from "./harness/executor.js";
+import { createServerThreadStorage } from "./services/thread-storage.js";
 import { setupMcpEndpoint } from "./endpoints/mcp.js";
 import { setupSessionEndpoints } from "./endpoints/session.js";
 import { setupCapsuleEndpoints } from "./endpoints/capsules.js";
 import { setupMcpsRpcEndpoint } from "./endpoints/mcps-rpc.js";
+import { setupThreadEndpoints } from "./endpoints/threads.js";
 import type { RelayConfig } from "@onemcp/shared";
 
 export interface ServerConfig {
@@ -86,11 +88,16 @@ export async function startServer(serverConfig: ServerConfig) {
   cleanupService.start();
   log.info("Capsule cleanup service started");
 
+  // Initialize thread storage
+  const threadStorage = await createServerThreadStorage({ type: "memory" }, log);
+  log.info("Thread storage initialized");
+
   // Setup endpoints
   setupMcpEndpoint(app, capsuleBuilder, sessionManager, nodeExecutor, serverConfig.config);
   setupSessionEndpoints(app, sessionManager);
   setupCapsuleEndpoints(app, capsuleBuilder);
   setupMcpsRpcEndpoint(app, mcpManager);
+  setupThreadEndpoints(app, threadStorage);
 
   // Simple execute endpoint for frontend tools (non-MCP)
   app.post("/execute", async (c) => {
@@ -174,6 +181,7 @@ export async function startServer(serverConfig: ServerConfig) {
         executionMode: "node-harness-only",
         endpoints: {
           mcp: `POST http://${serverConfig.bindAddress}:${serverConfig.port}/mcp`,
+          threads: `http://${serverConfig.bindAddress}:${serverConfig.port}/threads`,
         },
       });
     });

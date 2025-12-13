@@ -1,0 +1,19 @@
+{
+  "language": "js",
+  "npm": {
+    "dependencies": {},
+    "lockfile": ""
+  },
+  "policy": {
+    "network": {
+      "allowedDomains": ["api.github.com", "*.npmjs.org"],
+      "deniedDomains": [],
+      "denyIpLiterals": true,
+      "blockPrivateRanges": true
+    }
+  },
+  "mcps": [],
+  "sessionTtlMs": 300000,
+  "signingKeyPath": ".1mcp/keys/",
+  "cacheDir": ".1mcp/capsules/"
+}

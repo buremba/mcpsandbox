@@ -1,0 +1,729 @@
+/* OneMCP Widget CSS Variables */
+:root {
+  /* Colors - Light Theme (default) */
+  --onemcp-bg-primary: #ffffff;
+  --onemcp-bg-secondary: #f5f5f5;
+  --onemcp-bg-tertiary: #eeeeee;
+  --onemcp-text-primary: #1a1a1a;
+  --onemcp-text-secondary: #666666;
+  --onemcp-text-muted: #999999;
+  --onemcp-border: #e5e5e5;
+  --onemcp-accent: #0066ff;
+  --onemcp-accent-hover: #0052cc;
+  --onemcp-accent-text: #ffffff;
+  --onemcp-error: #dc3545;
+  --onemcp-success: #28a745;
+
+  /* Spacing */
+  --onemcp-spacing-xs: 4px;
+  --onemcp-spacing-sm: 8px;
+  --onemcp-spacing-md: 16px;
+  --onemcp-spacing-lg: 24px;
+  --onemcp-spacing-xl: 32px;
+
+  /* Border Radius */
+  --onemcp-radius: 12px;
+  --onemcp-radius-sm: 6px;
+  --onemcp-radius-lg: 16px;
+  --onemcp-radius-full: 9999px;
+
+  /* Typography */
+  --onemcp-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --onemcp-font-size-sm: 13px;
+  --onemcp-font-size-md: 14px;
+  --onemcp-font-size-lg: 16px;
+
+  /* Shadows */
+  --onemcp-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --onemcp-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --onemcp-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.15);
+
+  /* Animation */
+  --onemcp-transition-fast: 150ms ease;
+  --onemcp-transition: 250ms ease;
+}
+
+/* Dark Theme */
+[data-theme="dark"],
+.onemcp-widget-dark {
+  --onemcp-bg-primary: #1a1a1a;
+  --onemcp-bg-secondary: #2d2d2d;
+  --onemcp-bg-tertiary: #3d3d3d;
+  --onemcp-text-primary: #ffffff;
+  --onemcp-text-secondary: #b3b3b3;
+  --onemcp-text-muted: #808080;
+  --onemcp-border: #404040;
+  --onemcp-accent: #3b82f6;
+  --onemcp-accent-hover: #2563eb;
+}
+
+/* Minimal Theme */
+.onemcp-widget-minimal {
+  --onemcp-radius: 4px;
+  --onemcp-radius-sm: 2px;
+  --onemcp-radius-lg: 6px;
+  --onemcp-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --onemcp-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* =====================================================
+   Markdown Styles for Chat Messages
+   ===================================================== */
+
+.onemcp-markdown {
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Headings */
+.onemcp-md-h1 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin: 0.8em 0 0.4em;
+  line-height: 1.3;
+}
+
+.onemcp-md-h1:first-child {
+  margin-top: 0;
+}
+
+.onemcp-md-h2 {
+  font-size: 1.3em;
+  font-weight: 600;
+  margin: 0.7em 0 0.3em;
+  line-height: 1.3;
+}
+
+.onemcp-md-h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin: 0.6em 0 0.3em;
+  line-height: 1.4;
+}
+
+.onemcp-md-h4 {
+  font-size: 1em;
+  font-weight: 600;
+  margin: 0.5em 0 0.2em;
+}
+
+/* Paragraphs */
+.onemcp-md-p {
+  margin: 0.5em 0;
+}
+
+.onemcp-md-p:first-child {
+  margin-top: 0;
+}
+
+.onemcp-md-p:last-child {
+  margin-bottom: 0;
+}
+
+/* Links */
+.onemcp-md-a {
+  color: var(--onemcp-accent, #0066ff);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.onemcp-md-a:hover {
+  color: var(--onemcp-accent-hover, #0052cc);
+}
+
+/* Lists */
+.onemcp-md-ul,
+.onemcp-md-ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.onemcp-md-ul {
+  list-style-type: disc;
+}
+
+.onemcp-md-ol {
+  list-style-type: decimal;
+}
+
+.onemcp-md-li {
+  margin: 0.25em 0;
+}
+
+.onemcp-md-li > .onemcp-md-ul,
+.onemcp-md-li > .onemcp-md-ol {
+  margin: 0.25em 0;
+}
+
+/* Blockquote */
+.onemcp-md-blockquote {
+  margin: 0.5em 0;
+  padding: 0.5em 0 0.5em 1em;
+  border-left: 3px solid var(--onemcp-accent, #0066ff);
+  background-color: var(--onemcp-bg-tertiary, #eeeeee);
+  border-radius: 0 var(--onemcp-radius-sm, 4px) var(--onemcp-radius-sm, 4px) 0;
+  font-style: italic;
+}
+
+/* Code - Inline */
+.onemcp-inline-code {
+  background-color: var(--onemcp-bg-tertiary, #eeeeee);
+  padding: 0.15em 0.4em;
+  border-radius: var(--onemcp-radius-sm, 4px);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+/* Code - Block */
+.onemcp-code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--onemcp-bg-tertiary, #eeeeee);
+  padding: 0.5em 0.75em;
+  border-radius: var(--onemcp-radius-sm, 4px) var(--onemcp-radius-sm, 4px) 0 0;
+  font-size: 0.8em;
+  margin-top: 0.5em;
+}
+
+.onemcp-code-language {
+  text-transform: lowercase;
+  color: var(--onemcp-text-secondary, #666);
+  font-weight: 500;
+}
+
+.onemcp-copy-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--onemcp-text-secondary, #666);
+  border-radius: var(--onemcp-radius-sm, 4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--onemcp-transition-fast);
+}
+
+.onemcp-copy-button:hover {
+  background-color: var(--onemcp-bg-secondary, #f5f5f5);
+  color: var(--onemcp-text-primary, #1a1a1a);
+}
+
+.onemcp-md-pre {
+  margin: 0;
+  padding: 0.75em 1em;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  border-radius: 0 0 var(--onemcp-radius-sm, 4px) var(--onemcp-radius-sm, 4px);
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+.onemcp-code-block {
+  font-family: inherit;
+}
+
+/* Tables */
+.onemcp-table-wrapper {
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+
+.onemcp-md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+
+.onemcp-md-th {
+  background-color: var(--onemcp-bg-tertiary, #eeeeee);
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--onemcp-border, #e5e5e5);
+}
+
+.onemcp-md-td {
+  padding: 0.5em 0.75em;
+  border-bottom: 1px solid var(--onemcp-border, #e5e5e5);
+}
+
+.onemcp-md-tr:last-child .onemcp-md-td {
+  border-bottom: none;
+}
+
+/* Horizontal Rule */
+.onemcp-md-hr {
+  border: none;
+  border-top: 1px solid var(--onemcp-border, #e5e5e5);
+  margin: 1em 0;
+}
+
+/* Strong and Emphasis */
+.onemcp-md-strong {
+  font-weight: 600;
+}
+
+.onemcp-md-em {
+  font-style: italic;
+}
+
+/* Dark theme overrides for markdown */
+[data-theme="dark"] .onemcp-md-pre,
+.onemcp-widget-dark .onemcp-md-pre {
+  background-color: #0d0d0d;
+}
+
+[data-theme="dark"] .onemcp-inline-code,
+.onemcp-widget-dark .onemcp-inline-code {
+  background-color: var(--onemcp-bg-tertiary, #3d3d3d);
+}
+
+[data-theme="dark"] .onemcp-code-header,
+.onemcp-widget-dark .onemcp-code-header {
+  background-color: #1a1a1a;
+}
+
+[data-theme="dark"] .onemcp-md-blockquote,
+.onemcp-widget-dark .onemcp-md-blockquote {
+  background-color: var(--onemcp-bg-tertiary, #3d3d3d);
+}
+
+/* =====================================================
+   Mermaid Diagrams
+   ===================================================== */
+
+.onemcp-mermaid-diagram {
+  margin: 0.5em 0;
+  padding: 1em;
+  background-color: var(--onemcp-bg-secondary, #f5f5f5);
+  border-radius: var(--onemcp-radius-sm, 4px);
+  text-align: center;
+  overflow-x: auto;
+}
+
+.onemcp-mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.onemcp-mermaid-loading {
+  color: var(--onemcp-text-secondary, #666);
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.onemcp-mermaid-error {
+  color: var(--onemcp-error, #dc3545);
+  font-size: 0.9em;
+  padding: 0.5em;
+}
+
+/* Dark theme mermaid */
+[data-theme="dark"] .onemcp-mermaid-diagram,
+.onemcp-widget-dark .onemcp-mermaid-diagram {
+  background-color: var(--onemcp-bg-tertiary, #3d3d3d);
+}
+
+/* =====================================================
+   Syntax Highlighting (react-shiki)
+   ===================================================== */
+
+.onemcp-shiki-highlighter {
+  margin: 0;
+  font-size: 0.85em;
+}
+
+.onemcp-shiki-highlighter pre {
+  margin: 0;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+  border-radius: 0 0 var(--onemcp-radius-sm, 4px) var(--onemcp-radius-sm, 4px);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  line-height: 1.5;
+}
+
+.onemcp-shiki-highlighter code {
+  font-family: inherit;
+}
+
+/* Shiki dual theme support */
+.shiki,
+.shiki span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+}
+
+/* Dark mode - class based */
+[data-theme="dark"] .shiki,
+[data-theme="dark"] .shiki span,
+.onemcp-widget-dark .shiki,
+.onemcp-widget-dark .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+/* Dark mode - prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+  .shiki,
+  .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+  }
+}
+
+/* =====================================================
+   Reasoning Component
+   ===================================================== */
+
+.onemcp-reasoning-root {
+  margin: 0.5em 0;
+  width: 100%;
+}
+
+.onemcp-reasoning-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--onemcp-text-secondary, #666);
+  font-size: 0.9em;
+  transition: color var(--onemcp-transition-fast);
+}
+
+.onemcp-reasoning-trigger:hover {
+  color: var(--onemcp-text-primary, #1a1a1a);
+}
+
+.onemcp-reasoning-icon {
+  flex-shrink: 0;
+}
+
+.onemcp-reasoning-label {
+  position: relative;
+  display: inline-block;
+}
+
+.onemcp-reasoning-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--onemcp-accent, #0066ff) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 2s infinite linear;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.onemcp-reasoning-chevron {
+  flex-shrink: 0;
+  transition: transform var(--onemcp-transition-fast);
+  transform: rotate(-90deg);
+}
+
+.onemcp-reasoning-chevron-open {
+  transform: rotate(0deg);
+}
+
+.onemcp-reasoning-content {
+  padding: 0.75em 0 0.75em 1.5em;
+  color: var(--onemcp-text-secondary, #666);
+  font-size: 0.9em;
+  line-height: 1.6;
+  border-left: 2px solid var(--onemcp-border, #e5e5e5);
+  margin-left: 0.5em;
+}
+
+.onemcp-reasoning-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.onemcp-reasoning-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+/* =====================================================
+   Tool Group & Tool Call Components
+   ===================================================== */
+
+.onemcp-tool-group {
+  margin: 0.5em 0;
+  border: 1px solid var(--onemcp-border, #e5e5e5);
+  border-radius: var(--onemcp-radius-sm, 4px);
+  overflow: hidden;
+}
+
+.onemcp-tool-group-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  width: 100%;
+  padding: 0.75em 1em;
+  background: var(--onemcp-bg-tertiary, #eeeeee);
+  border: none;
+  cursor: pointer;
+  color: var(--onemcp-text-primary, #1a1a1a);
+  font-size: 0.9em;
+  font-weight: 500;
+  transition: background var(--onemcp-transition-fast);
+}
+
+.onemcp-tool-group-trigger:hover {
+  background: var(--onemcp-bg-secondary, #f5f5f5);
+}
+
+.onemcp-tool-group-icon {
+  flex-shrink: 0;
+  color: var(--onemcp-accent, #0066ff);
+}
+
+.onemcp-tool-group-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  text-align: left;
+}
+
+.onemcp-tool-group-running {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  color: var(--onemcp-text-secondary, #666);
+  font-weight: 400;
+  font-size: 0.85em;
+}
+
+.onemcp-tool-group-spinner,
+.onemcp-tool-call-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--onemcp-border, #e5e5e5);
+  border-top-color: var(--onemcp-accent, #0066ff);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.onemcp-tool-group-chevron {
+  flex-shrink: 0;
+  transition: transform var(--onemcp-transition-fast);
+  transform: rotate(-90deg);
+}
+
+.onemcp-tool-group-chevron-open {
+  transform: rotate(0deg);
+}
+
+.onemcp-tool-group-content {
+  padding: 0.5em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+/* Tool Call */
+.onemcp-tool-call {
+  border: 1px solid var(--onemcp-border, #e5e5e5);
+  border-radius: var(--onemcp-radius-sm, 4px);
+  overflow: hidden;
+}
+
+.onemcp-tool-call-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.5em 0.75em;
+  background: var(--onemcp-bg-secondary, #f5f5f5);
+  font-size: 0.85em;
+}
+
+.onemcp-tool-call-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+}
+
+.onemcp-tool-call-complete .onemcp-tool-call-status {
+  color: var(--onemcp-success, #28a745);
+}
+
+.onemcp-tool-call-error .onemcp-tool-call-status {
+  color: var(--onemcp-error, #dc3545);
+}
+
+.onemcp-tool-call-pending .onemcp-tool-call-status,
+.onemcp-tool-call-running .onemcp-tool-call-status {
+  color: var(--onemcp-accent, #0066ff);
+}
+
+.onemcp-tool-call-name {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-weight: 500;
+}
+
+.onemcp-tool-call-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--onemcp-accent, #0066ff);
+  font-size: 0.85em;
+  padding: 0.25em 0.5em;
+  border-radius: var(--onemcp-radius-sm, 4px);
+  transition: background var(--onemcp-transition-fast);
+}
+
+.onemcp-tool-call-toggle:hover {
+  background: var(--onemcp-bg-tertiary, #eeeeee);
+}
+
+.onemcp-tool-call-details {
+  padding: 0.75em;
+  font-size: 0.85em;
+}
+
+.onemcp-tool-call-section-label {
+  font-weight: 500;
+  margin-bottom: 0.25em;
+  color: var(--onemcp-text-secondary, #666);
+}
+
+.onemcp-tool-call-json {
+  margin: 0;
+  padding: 0.5em;
+  background: var(--onemcp-bg-tertiary, #eeeeee);
+  border-radius: var(--onemcp-radius-sm, 4px);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.onemcp-tool-call-args {
+  margin-bottom: 0.75em;
+}
+
+/* Dark theme for Tool components */
+[data-theme="dark"] .onemcp-tool-group-trigger,
+.onemcp-widget-dark .onemcp-tool-group-trigger {
+  background: var(--onemcp-bg-tertiary, #3d3d3d);
+}
+
+[data-theme="dark"] .onemcp-tool-group-trigger:hover,
+.onemcp-widget-dark .onemcp-tool-group-trigger:hover {
+  background: var(--onemcp-bg-secondary, #2d2d2d);
+}
+
+[data-theme="dark"] .onemcp-tool-call-header,
+.onemcp-widget-dark .onemcp-tool-call-header {
+  background: var(--onemcp-bg-tertiary, #3d3d3d);
+}
+
+[data-theme="dark"] .onemcp-tool-call-json,
+.onemcp-widget-dark .onemcp-tool-call-json {
+  background: #1e1e1e;
+  color: #d4d4d4;
+}
+
+/* =====================================================
+   MCP App Renderer (Iframe UI)
+   ===================================================== */
+
+.onemcp-app-renderer {
+  width: 100%;
+  min-height: 150px;
+  border: 1px solid var(--onemcp-border, #e5e5e5);
+  border-radius: var(--onemcp-radius-sm, 6px);
+  overflow: hidden;
+  background: var(--onemcp-bg-primary, #ffffff);
+}
+
+.onemcp-app-renderer iframe {
+  width: 100%;
+  border: none;
+  display: block;
+  background: var(--onemcp-bg-primary, #ffffff);
+}
+
+.onemcp-app-renderer-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 2em;
+  color: var(--onemcp-text-secondary, #666);
+  font-size: 0.9em;
+}
+
+.onemcp-app-renderer-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--onemcp-border, #e5e5e5);
+  border-top-color: var(--onemcp-accent, #0066ff);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.onemcp-app-renderer-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 1.5em;
+  color: var(--onemcp-error, #dc3545);
+  font-size: 0.9em;
+  text-align: center;
+}
+
+.onemcp-app-renderer-error svg {
+  flex-shrink: 0;
+}
+
+/* Dark theme for MCP App Renderer */
+[data-theme="dark"] .onemcp-app-renderer,
+.onemcp-widget-dark .onemcp-app-renderer {
+  background: var(--onemcp-bg-secondary, #2d2d2d);
+  border-color: var(--onemcp-border, #404040);
+}
+
+[data-theme="dark"] .onemcp-app-renderer iframe,
+.onemcp-widget-dark .onemcp-app-renderer iframe {
+  background: var(--onemcp-bg-secondary, #2d2d2d);
+}

@@ -8,9 +8,13 @@
     "packages/shared"
   ],
   "scripts": {
-    "build": "make build",
-    "dev": "make dev",
+    "build": "pnpm run build:shared && pnpm run build:server && pnpm run build:widget",
+    "build:shared": "pnpm --filter @onemcp/shared build",
+    "build:server": "pnpm --filter 1mcp build",
+    "build:widget": "pnpm --filter @onemcp/widget-react build",
+    "dev": "pnpm --filter 1mcp-docs dev",
     "serve": "node scripts/dev-serve.js serve --no-ui",
+    "dev:tmux": "bash scripts/tmux-dev.sh",
     "init": "node scripts/dev-serve.js init",
     "format": "biome format --write .",
     "format:check": "biome format .",
@@ -26,6 +30,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.2.2",
     "@types/node": "^22.0.0",
+    "concurrently": "9.2.1",
     "dotenv": "17.2.3",
     "husky": "^9.1.7",
     "tsx": "^4.19.0",

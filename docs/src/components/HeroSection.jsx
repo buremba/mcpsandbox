@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import DemoSection from './DemoSection';
 import IntegrationDropdown from './IntegrationDropdown';
 
 const HeroSection = () => {
@@ -16,10 +15,10 @@ const HeroSection = () => {
         <section className="hero-section">
             <div className="hero-content">
                 <h1 className="hero-title">
-                    Safe Code Execution for AI Agents
+                    Build your custom agent in minutes
                 </h1>
                 <p className="hero-subtitle">
-                    Execute AI agent code in the browser or server with WASM. Eliminate context bloat <a href="#faq-why-96">by 96%</a>.
+                    .
                 </p>
 
                 <div className="hero-cta">
@@ -66,9 +65,29 @@ const HeroSection = () => {
                 </div>
             </div>
 
-            {/* Demo */}
-            <div className="hero-demo-wrapper">
-                <DemoSection />
+            {/* CTA to scroll to embed section */}
+            <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+                <a
+                    href="#embed"
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.875rem 2rem',
+                        background: 'var(--accent-blue)',
+                        color: '#fff',
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        transition: 'all 0.2s ease',
+                    }}
+                >
+                    Get Started
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path fillRule="evenodd" d="M8 4a.5.5 0 01.5.5v5.793l2.146-2.147a.5.5 0 01.708.708l-3 3a.5.5 0 01-.708 0l-3-3a.5.5 0 11.708-.708L7.5 10.293V4.5A.5.5 0 018 4z" />
+                    </svg>
+                </a>
             </div>
         </section>
     );
