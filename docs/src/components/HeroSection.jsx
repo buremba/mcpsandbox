@@ -15,10 +15,10 @@ const HeroSection = () => {
         <section className="hero-section">
             <div className="hero-content">
                 <h1 className="hero-title">
-                    Build your custom agent in minutes
+                    Build AI-Powered Widgets in Minutes
                 </h1>
                 <p className="hero-subtitle">
-                    .
+                    Secure LLM proxy on Cloudflare Workers. Your API keys stay server-side, rate limiting included.
                 </p>
 
                 <div className="hero-cta">
@@ -52,16 +52,20 @@ const HeroSection = () => {
             {/* Value Prop Strip */}
             <div className="value-props">
                 <div className="value-prop">
+                    <span className="value-icon">🔐</span>
+                    <span>API keys never exposed</span>
+                </div>
+                <div className="value-prop">
                     <span className="value-icon">⚡</span>
-                    <span>10ms cold start</span>
+                    <span>Edge-deployed proxy</span>
                 </div>
                 <div className="value-prop">
-                    <span className="value-icon">🌐</span>
-                    <span>Browser or server execution</span>
+                    <span className="value-icon">📊</span>
+                    <span>Built-in rate limiting</span>
                 </div>
                 <div className="value-prop">
-                    <span className="value-icon">🔒</span>
-                    <span>WASM sandboxing</span>
+                    <span className="value-icon">🔌</span>
+                    <span>MCP tool support</span>
                 </div>
             </div>
 

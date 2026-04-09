@@ -26,7 +26,14 @@ const WIDGET_CONFIG_SCHEMA = {
         },
         apiKey: { type: "string" },
         name: { type: "string" },
-        baseUrl: { type: "string", format: "uri" }
+        baseUrl: { type: "string", format: "uri" },
+        secure: {
+          type: "object",
+          properties: {
+            token: { type: "string" },
+            proxyEndpoint: { type: "string", format: "uri" }
+          }
+        }
       }
     },
     policy: {
@@ -190,6 +197,9 @@ const PROVIDERS = [
   { id: 'chrome', name: 'Chrome Built-in AI', requiresKey: false, models: ['gemini-nano'] }
 ];
 
+// Default secure proxy endpoint (optional feature)
+const SECURE_PROXY_ENDPOINT = 'https://relay-mcp.buremba.workers.dev/chat';
+
 // Theme options
 const THEME_PRESETS = ['light', 'dark', 'minimal'];
 const POSITIONS = ['bottom-right', 'bottom-left', 'top-right', 'top-left'];
@@ -199,10 +209,13 @@ const WIDGET_CDN_URL = 'https://1mcp.dev/widget.js';
 
 // Generate embed code from config
 const generateEmbedCode = (config, format = 'readable') => {
-  // Remove apiKey from config for security (user should add it themselves or use env vars)
+  // Remove sensitive values from config for security (user should add it themselves or use env vars)
   const safeConfig = JSON.parse(JSON.stringify(config));
   if (safeConfig.model?.apiKey) {
     safeConfig.model.apiKey = 'YOUR_API_KEY';
+  }
+  if (safeConfig.model?.secure?.token) {
+    safeConfig.model.secure.token = 'YOUR_SECURE_TOKEN';
   }
 
   if (format === 'minified') {
@@ -901,7 +914,12 @@ const EmbedCodeModal = ({ config, onClose }) => {
               lineHeight: 1.5
             }}>
               Add this snippet to your HTML, just before the closing <code style={{ background: 'var(--bg-tertiary, #21262d)', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>&lt;/body&gt;</code> tag.
-              {config.model?.provider !== 'chrome' && (
+              {config.model?.secure?.token && (
+                <span style={{ display: 'block', marginTop: '0.5rem', color: 'var(--success, #238636)' }}>
+                  Using Secure Proxy - your API key stays server-side. Replace <code style={{ background: 'var(--bg-tertiary, #21262d)', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>YOUR_SECURE_TOKEN</code> with your generated token.
+                </span>
+              )}
+              {config.model?.provider !== 'chrome' && !config.model?.secure?.token && (
                 <span style={{ display: 'block', marginTop: '0.5rem', color: 'var(--warning, #d29922)' }}>
                   Note: Replace <code style={{ background: 'var(--bg-tertiary, #21262d)', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>YOUR_API_KEY</code> with your actual API key.
                 </span>
@@ -1301,6 +1319,204 @@ const ConfigBuilder = ({ initialConfig, onConfigChange, onStartChat, wizardMode 
                       placeholder="https://api.openai.com/v1"
                     />
                   </div>
+                </div>
+              )}
+              {/* Secure Proxy Option - optional for OpenAI/Anthropic */}
+              {selectedProvider.requiresKey && (
+                <div style={{ marginTop: '1rem' }}>
+                  <label style={{ ...styles.checkbox, marginBottom: '0.75rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={!!config.model?.secure?.proxyEndpoint}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          updateConfig('model.secure.proxyEndpoint', SECURE_PROXY_ENDPOINT);
+                          // Set default rate limits
+                          updateConfig('model.secure.limits', {
+                            maxTokensPerRequest: 4096,
+                            maxTokensPerDay: 100000,
+                            maxRequestsPerMinute: 10,
+                            maxRequestsPerDay: 1000,
+                          });
+                        } else {
+                          // Clear secure config when unchecked
+                          const newConfig = JSON.parse(JSON.stringify(config));
+                          delete newConfig.model?.secure;
+                          setConfig(newConfig);
+                        }
+                      }}
+                    />
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-primary, #c9d1d9)', fontWeight: 500 }}>
+                      Use Secure Proxy (hide API key from browser)
+                    </span>
+                  </label>
+                  {config.model?.secure?.proxyEndpoint && (
+                    <>
+                      {/* Token Input */}
+                      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+                        <div style={{ ...styles.field, flex: 2 }}>
+                          <label style={styles.label}>Secure Token (JWE)</label>
+                          <input
+                            style={styles.input}
+                            type="password"
+                            value={config.model?.secure?.token || ''}
+                            onChange={(e) => updateConfig('model.secure.token', e.target.value)}
+                            placeholder="eyJhbGciOiJkaXIi..."
+                          />
+                        </div>
+                        <div style={{ ...styles.field, flex: 1 }}>
+                          <label style={styles.label}>Proxy Endpoint</label>
+                          <input
+                            style={styles.input}
+                            value={config.model?.secure?.proxyEndpoint || SECURE_PROXY_ENDPOINT}
+                            onChange={(e) => updateConfig('model.secure.proxyEndpoint', e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Rate Limits Configuration */}
+                      <div style={{
+                        padding: '1rem',
+                        background: 'var(--bg-primary, #0d1117)',
+                        borderRadius: '6px',
+                        border: '1px solid var(--border-color, #30363d)',
+                        marginBottom: '0.75rem'
+                      }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary, #c9d1d9)', marginBottom: '0.75rem' }}>
+                          Rate Limits (embedded in token)
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem' }}>
+                          <div style={styles.field}>
+                            <label style={styles.label}>Max Tokens/Request</label>
+                            <input
+                              style={{ ...styles.input, fontSize: '0.85rem' }}
+                              type="number"
+                              value={config.model?.secure?.limits?.maxTokensPerRequest || 4096}
+                              onChange={(e) => updateConfig('model.secure.limits.maxTokensPerRequest', parseInt(e.target.value) || 4096)}
+                            />
+                          </div>
+                          <div style={styles.field}>
+                            <label style={styles.label}>Max Tokens/Day</label>
+                            <input
+                              style={{ ...styles.input, fontSize: '0.85rem' }}
+                              type="number"
+                              value={config.model?.secure?.limits?.maxTokensPerDay || 100000}
+                              onChange={(e) => updateConfig('model.secure.limits.maxTokensPerDay', parseInt(e.target.value) || 100000)}
+                            />
+                          </div>
+                          <div style={styles.field}>
+                            <label style={styles.label}>Max Requests/Minute</label>
+                            <input
+                              style={{ ...styles.input, fontSize: '0.85rem' }}
+                              type="number"
+                              value={config.model?.secure?.limits?.maxRequestsPerMinute || 10}
+                              onChange={(e) => updateConfig('model.secure.limits.maxRequestsPerMinute', parseInt(e.target.value) || 10)}
+                            />
+                          </div>
+                          <div style={styles.field}>
+                            <label style={styles.label}>Max Requests/Day</label>
+                            <input
+                              style={{ ...styles.input, fontSize: '0.85rem' }}
+                              type="number"
+                              value={config.model?.secure?.limits?.maxRequestsPerDay || 1000}
+                              onChange={(e) => updateConfig('model.secure.limits.maxRequestsPerDay', parseInt(e.target.value) || 1000)}
+                            />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+                          <div style={{ ...styles.field, flex: 1 }}>
+                            <label style={styles.label}>Token Expires In</label>
+                            <select
+                              style={{ ...styles.select, fontSize: '0.85rem' }}
+                              value={config.model?.secure?.expiresIn || '30d'}
+                              onChange={(e) => updateConfig('model.secure.expiresIn', e.target.value)}
+                            >
+                              <option value="1h">1 Hour</option>
+                              <option value="24h">24 Hours</option>
+                              <option value="7d">7 Days</option>
+                              <option value="30d">30 Days</option>
+                              <option value="90d">90 Days</option>
+                              <option value="365d">1 Year</option>
+                            </select>
+                          </div>
+                          <div style={{ ...styles.field, flex: 1 }}>
+                            <label style={styles.label}>Base URL (optional)</label>
+                            <input
+                              style={{ ...styles.input, fontSize: '0.85rem' }}
+                              value={config.model?.secure?.baseUrl || ''}
+                              onChange={(e) => updateConfig('model.secure.baseUrl', e.target.value)}
+                              placeholder="e.g., Cloudflare AI Gateway URL"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Generate Token Command */}
+                      <div style={{
+                        padding: '0.75rem 1rem',
+                        background: 'rgba(88, 166, 255, 0.1)',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(88, 166, 255, 0.2)'
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary, #8b949e)' }}>
+                            Generate token server-side with your settings:
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const limits = config.model?.secure?.limits || {};
+                              const cmd = `ENCRYPTION_SECRET=your-secret npx tsx scripts/generate-token.ts \\
+  --api-key=sk-xxx \\
+  --provider=${config.model?.provider || 'openai'}${config.model?.secure?.baseUrl ? ` \\
+  --base-url=${config.model.secure.baseUrl}` : ''} \\
+  --expires-in=${config.model?.secure?.expiresIn || '30d'} \\
+  --max-tokens-per-request=${limits.maxTokensPerRequest || 4096} \\
+  --max-tokens-per-day=${limits.maxTokensPerDay || 100000} \\
+  --max-requests-per-minute=${limits.maxRequestsPerMinute || 10} \\
+  --max-requests-per-day=${limits.maxRequestsPerDay || 1000}`;
+                              navigator.clipboard.writeText(cmd);
+                            }}
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '4px',
+                              border: '1px solid var(--border-color, #30363d)',
+                              background: 'var(--bg-tertiary, #21262d)',
+                              color: 'var(--text-secondary, #8b949e)',
+                              fontSize: '0.7rem',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Copy
+                          </button>
+                        </div>
+                        <code style={{
+                          display: 'block',
+                          background: 'var(--bg-tertiary, #21262d)',
+                          padding: '0.5rem 0.75rem',
+                          borderRadius: '4px',
+                          fontSize: '0.65rem',
+                          color: 'var(--text-primary, #c9d1d9)',
+                          wordBreak: 'break-all',
+                          lineHeight: 1.5,
+                          whiteSpace: 'pre-wrap'
+                        }}>
+                          {`ENCRYPTION_SECRET=your-secret npx tsx scripts/generate-token.ts \\
+  --api-key=sk-xxx \\
+  --provider=${config.model?.provider || 'openai'}${config.model?.secure?.baseUrl ? ` \\
+  --base-url=${config.model.secure.baseUrl}` : ''} \\
+  --expires-in=${config.model?.secure?.expiresIn || '30d'} \\
+  --max-tokens-per-request=${config.model?.secure?.limits?.maxTokensPerRequest || 4096} \\
+  --max-tokens-per-day=${config.model?.secure?.limits?.maxTokensPerDay || 100000} \\
+  --max-requests-per-minute=${config.model?.secure?.limits?.maxRequestsPerMinute || 10} \\
+  --max-requests-per-day=${config.model?.secure?.limits?.maxRequestsPerDay || 1000}`}
+                        </code>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary, #8b949e)', marginTop: '0.5rem' }}>
+                          Run this command in the <code style={{ background: 'var(--bg-tertiary, #21262d)', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>relay-mcp</code> project root. Replace <code style={{ background: 'var(--bg-tertiary, #21262d)', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>your-secret</code> with your worker's ENCRYPTION_SECRET.
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>

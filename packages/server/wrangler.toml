@@ -1,0 +1,60 @@
+# Cloudflare Workers Configuration
+# https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "relay-mcp"
+main = "dist/worker.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Environment Variables (non-secret)
+[vars]
+ALLOWED_ORIGINS = "*"
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "relay-mcp"
+database_id = "ac05e020-ca98-4720-af8a-c866090b51ee"
+
+# R2 Bucket (optional - for file storage)
+# Uncomment and configure if using R2
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "relay-mcp-storage"
+
+# Secrets (set via `wrangler secret put`)
+# ENCRYPTION_SECRET - 32+ character secret for JWE encryption
+# SIGNING_KEY - EdDSA private key for JWT signing (optional)
+
+# Development environment
+[env.dev]
+name = "relay-mcp-dev"
+# Use a separate D1 database for development
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "relay-mcp-dev"
+# database_id = "YOUR_DEV_D1_DATABASE_ID"
+
+# Preview environment (for wrangler pages)
+[env.preview]
+name = "relay-mcp-preview"
+
+# Production environment
+[env.production]
+name = "relay-mcp"
+
+# Build configuration
+[build]
+command = "npm run build:worker"
+
+# Limits
+[limits]
+cpu_ms = 50  # CPU time limit per request
+
+# Observability
+[observability]
+enabled = true
+
+# Triggers (scheduled workers for cleanup, etc.)
+# [triggers]
+# crons = ["0 0 * * *"]  # Daily cleanup at midnight

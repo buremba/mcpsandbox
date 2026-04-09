@@ -1,17 +1,60 @@
 import type { MCPServerConfig, Policy } from "@onemcp/shared";
 
 /**
+ * Secure proxy configuration for API key protection
+ * API key is encrypted in a JWE token server-side
+ */
+export interface SecureProxyConfig {
+  /** JWE encrypted token containing API key and rate limits */
+  token: string;
+  /** Proxy endpoint URL (e.g., 'https://relay-mcp.workers.dev/chat') */
+  proxyEndpoint: string;
+}
+
+/**
+ * Rate limit exceeded event info
+ */
+export interface RateLimitInfo {
+  /** Reason for rate limit */
+  reason: string;
+  /** When the rate limit resets (minute window) */
+  minuteResetAt: number;
+  /** When the rate limit resets (day window) */
+  dayResetAt: number;
+  /** Current usage */
+  usage: {
+    tokensUsedToday: number;
+    requestsToday: number;
+    requestsThisMinute: number;
+  };
+}
+
+/**
+ * Auth hooks for secure proxy usage tracking
+ */
+export interface AuthHooksConfig {
+  /** Get the current user ID for rate limiting */
+  getUserId?: () => string | Promise<string>;
+  /** Called when rate limit is exceeded */
+  onRateLimitExceeded?: (info: RateLimitInfo) => void;
+  /** Called when token is about to expire (optional) */
+  onTokenExpiring?: (expiresAt: number) => void;
+}
+
+/**
  * LLM Model configuration
  */
 export interface ModelConfig {
   /** LLM provider: 'openai', 'anthropic', 'chrome', or custom */
   provider: "openai" | "anthropic" | "chrome" | string;
-  /** API key (required for openai/anthropic) */
+  /** API key (required for openai/anthropic when not using secure proxy) */
   apiKey?: string;
   /** Model name (e.g., 'gpt-4o-mini', 'claude-3-5-sonnet-20241022') */
   name?: string;
   /** Custom API endpoint */
   baseUrl?: string;
+  /** Secure proxy configuration (alternative to apiKey) */
+  secure?: SecureProxyConfig;
 }
 
 /**
@@ -160,6 +203,12 @@ export interface WidgetConfig {
    * Called when embedded MCP App UIs trigger events
    */
   mcpApps?: MCPAppsCallbacks;
+
+  /**
+   * Auth hooks for secure proxy usage tracking
+   * Used when model.secure is configured
+   */
+  auth?: AuthHooksConfig;
 }
 
 /**

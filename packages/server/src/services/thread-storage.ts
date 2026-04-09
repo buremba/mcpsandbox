@@ -137,8 +137,13 @@ export class ServerMemoryThreadStorage implements IThreadStorage {
       throw new Error(`Message not found: ${messageId}`);
     }
 
+    const existingMessage = threadMessages[index];
+    if (!existingMessage) {
+      throw new Error(`Message not found: ${messageId}`);
+    }
+
     const updated: ThreadMessage = {
-      ...threadMessages[index],
+      ...existingMessage,
       ...updates,
       updatedAt: Date.now(),
     };

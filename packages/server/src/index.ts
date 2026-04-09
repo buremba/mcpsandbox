@@ -1,5 +1,11 @@
 /**
- * Main server entry point (spec §2)
+ * Main server entry point
+ *
+ * Unified server running on Node.js with:
+ * - SQLite database for sessions, rate limits, threads
+ * - QuickJS WASM for sandboxed execution
+ * - MCP server management
+ * - LLM proxy with rate limiting
  */
 
 import { Hono } from "hono";
@@ -8,17 +14,22 @@ import { logger } from "hono/logger";
 import { cors } from "hono/cors";
 import pino from "pino";
 import { SessionManager } from "./services/session-manager.js";
-import { CapsuleBuilder } from "./capsule/builder.js";
 import { MCPManager } from "./services/mcp-manager.js";
-import { CapsuleCleanupService } from "./services/capsule-cleanup.js";
 import { StubGenerator } from "./services/stub-generator.js";
-import { NodeExecutor } from "./harness/executor.js";
 import { createServerThreadStorage } from "./services/thread-storage.js";
 import { setupMcpEndpoint } from "./endpoints/mcp.js";
 import { setupSessionEndpoints } from "./endpoints/session.js";
-import { setupCapsuleEndpoints } from "./endpoints/capsules.js";
 import { setupMcpsRpcEndpoint } from "./endpoints/mcps-rpc.js";
 import { setupThreadEndpoints } from "./endpoints/threads.js";
+import { setupChatEndpoint } from "./endpoints/chat.js";
+import { createBetterSqlite3Adapter } from "./db/better-sqlite3.js";
+import { ensureSchema } from "./db/schema-init.js";
+import { TokenManager } from "./services/token-manager.js";
+import { RateLimiter } from "./services/rate-limiter.js";
+import { QuickJSNodeBackend } from "./execution/quickjs-node.js";
+import { createMemoryVFS } from "./vfs/memory.js";
+import { createLocalVFS } from "./vfs/local.js";
+import { createCompositeVFS } from "./vfs/composite.js";
 import type { RelayConfig } from "@onemcp/shared";
 
 export interface ServerConfig {
@@ -28,6 +39,8 @@ export interface ServerConfig {
   headless: boolean;
   keyPath: string;
   cacheDir: string;
+  databasePath?: string;
+  encryptionSecret?: string;
 }
 
 export async function startServer(serverConfig: ServerConfig) {
@@ -41,23 +54,46 @@ export async function startServer(serverConfig: ServerConfig) {
     },
   });
 
-  // CORS middleware - wildcard for browser as MCP client (spec §2.1)
+  // CORS middleware
   app.use("*", cors({ origin: "*" }));
 
   // Request logging
   app.use("*", logger());
 
-  // Initialize services
+  // Initialize database
+  const databasePath = serverConfig.databasePath ?? `${serverConfig.cacheDir}/relay.db`;
+  log.info(`Initializing database at ${databasePath}`);
+
+  let db;
+  try {
+    db = await createBetterSqlite3Adapter({
+      path: databasePath,
+      create: true,
+      walMode: true,
+    });
+    await ensureSchema(db);
+    log.info("Database initialized");
+  } catch (error) {
+    log.warn({ error }, "SQLite not available, using in-memory storage");
+    db = null;
+  }
+
+  // Initialize token manager for LLM proxy
+  const encryptionSecret = serverConfig.encryptionSecret ?? "development-secret-change-in-production";
+  const tokenManager = new TokenManager(encryptionSecret);
+  await tokenManager.initialize();
+  log.info("Token manager initialized");
+
+  // Initialize rate limiter (if database available)
+  let rateLimiter: RateLimiter | null = null;
+  if (db) {
+    rateLimiter = new RateLimiter(db);
+    log.info("Rate limiter initialized");
+  }
+
+  // Initialize session manager
   const sessionManager = new SessionManager(serverConfig.keyPath);
   await sessionManager.initialize();
-
-  const capsuleBuilder = new CapsuleBuilder({
-    cacheDir: serverConfig.cacheDir,
-    keyPath: serverConfig.keyPath,
-    policy: serverConfig.config.policy,
-    logger: log,
-  });
-  await capsuleBuilder.initialize();
 
   // Initialize MCP manager for upstream MCP servers
   const mcpManager = new MCPManager(serverConfig.config.mcps, log);
@@ -68,85 +104,65 @@ export async function startServer(serverConfig: ServerConfig) {
     await stubGenerator.generateAllStubs(serverConfig.config.mcps.map(m => m.name));
   }
 
-  // Initialize Node harness executor (QuickJS WASM) with MCP support
-  const nodeExecutor = new NodeExecutor(
-    serverConfig.cacheDir,
-    serverConfig.config.policy.filesystem,
-    mcpManager,
-    serverConfig.config.mcps
-  );
-  await nodeExecutor.initialize();
-  log.info("Node harness initialized (QuickJS WASM)");
+  // Initialize execution backend (QuickJS WASM)
+  const executor = new QuickJSNodeBackend({ verbose: false });
+  await executor.initialize();
+  log.info("QuickJS execution backend initialized");
 
-  // Initialize capsule cleanup service
-  const cleanupService = new CapsuleCleanupService({
-    cacheDir: serverConfig.cacheDir,
-    maxSizeBytes: 1024 * 1024 * 1024, // 1GB
-    maxAgeDays: 7, // 7 days
-    intervalMs: 60 * 60 * 1000, // 1 hour
-  }, log);
-  cleanupService.start();
-  log.info("Capsule cleanup service started");
+  // Initialize VFS
+  const vfs = createCompositeVFS();
+  vfs.mount("/tmp", createMemoryVFS());
+  try {
+    vfs.mount("/workspace", await createLocalVFS({
+      baseDir: serverConfig.cacheDir + "/workspace",
+      createBaseDir: true,
+    }));
+    log.info("Local filesystem mounted at /workspace");
+  } catch {
+    log.warn("Local filesystem not available, using memory only");
+  }
 
   // Initialize thread storage
   const threadStorage = await createServerThreadStorage({ type: "memory" }, log);
   log.info("Thread storage initialized");
 
-  // Setup endpoints
-  setupMcpEndpoint(app, capsuleBuilder, sessionManager, nodeExecutor, serverConfig.config);
+  // Setup MCP endpoint with new execution backend
+  setupMcpEndpoint(app, null as any, sessionManager, executor as any, serverConfig.config);
   setupSessionEndpoints(app, sessionManager);
-  setupCapsuleEndpoints(app, capsuleBuilder);
   setupMcpsRpcEndpoint(app, mcpManager);
   setupThreadEndpoints(app, threadStorage);
 
-  // Simple execute endpoint for frontend tools (non-MCP)
+  // Setup chat endpoint for LLM proxy (if rate limiter available)
+  if (rateLimiter) {
+    setupChatEndpoint(app, tokenManager, rateLimiter);
+    log.info("Chat endpoint enabled with rate limiting");
+  }
+
+  // Execute endpoint using new execution backend
   app.post("/execute", async (c) => {
     try {
       const body = await c.req.json();
-      const { sessionId, runtime, code } = body;
+      const { code, options } = body;
 
-      if (!sessionId || !runtime || !code) {
-        return c.json({ error: "Missing required parameters: sessionId, runtime, code" }, 400);
+      if (!code) {
+        return c.json({ error: "Missing required parameter: code" }, 400);
       }
 
-      if (runtime !== "quickjs") {
-        return c.json({ error: "Only 'quickjs' runtime is currently supported" }, 400);
-      }
-
-      // Import QuickJSRuntime dynamically
-      const { QuickJSRuntime } = await import("./harness/quickjs-runtime.js");
-      const qjs = new QuickJSRuntime();
-
-      // Create minimal capsule for execution
-      const minimalCapsule = {
-        version: "1.0.0",
-        language: "js",
-        entry: { path: "/index.js" },
-        policy: serverConfig.config.policy || {
-          limits: {
-            timeoutMs: 30000,
-            memMb: 128,
-            stdoutBytes: 1048576
-          }
-        }
-      };
-
-      let stdout = "";
-      let stderr = "";
-
-      // Execute code using QuickJS
-      const result = await qjs.execute(
-        code,
-        minimalCapsule as any,
-        (chunk: string) => { stdout += chunk; },
-        (chunk: string) => { stderr += chunk; }
-      );
-
-      return c.json({
-        ...result,
-        stdout,
-        stderr
+      const result = await executor.execute(code, {
+        ...options,
+        vfs,
+        limits: {
+          timeoutMs: serverConfig.config.policy?.limits?.timeoutMs ?? 30000,
+          memMb: serverConfig.config.policy?.limits?.memMb ?? 128,
+          stdoutBytes: serverConfig.config.policy?.limits?.stdoutBytes ?? 1048576,
+        },
+        network: serverConfig.config.policy?.network,
+        mcpCallTool: (serverName, toolName, args) =>
+          mcpManager.callTool(serverName, toolName, args),
+        mcpConfigs: serverConfig.config.mcps,
       });
+
+      return c.json(result);
     } catch (error: unknown) {
       log.error({ error }, "Execute endpoint error");
       return c.json({
@@ -156,36 +172,71 @@ export async function startServer(serverConfig: ServerConfig) {
     }
   });
 
+  // Token generation endpoint (for development/testing)
+  app.post("/token/generate", async (c) => {
+    try {
+      const body = await c.req.json();
+      const { apiKey, provider, developerId, userId, limits, expiresIn } = body;
+
+      if (!apiKey || !provider || !developerId || !userId) {
+        return c.json(
+          { error: "Missing required fields: apiKey, provider, developerId, userId" },
+          400
+        );
+      }
+
+      const token = await tokenManager.generateToken({
+        apiKey,
+        provider,
+        developerId,
+        userId,
+        limits: limits ?? {
+          maxTokensPerRequest: 4000,
+          maxTokensPerDay: 100000,
+          maxRequestsPerMinute: 20,
+          maxRequestsPerDay: 1000,
+        },
+        expiresIn,
+      });
+
+      return c.json({ token });
+    } catch (error) {
+      log.error({ error }, "Token generation error");
+      return c.json(
+        { error: error instanceof Error ? error.message : "Token generation error" },
+        500
+      );
+    }
+  });
+
   // Static file serving for UI
   if (!serverConfig.headless) {
     const { serveStatic } = await import("@hono/node-server/serve-static");
     const { resolve, dirname } = await import("node:path");
     const { fileURLToPath } = await import("node:url");
 
-    // Serve AI SDK integration example (built by Vite)
-    // When built: packages/server/dist/index.js
-    // Need to go up 3 levels to project root, then to examples/ai-sdk-integration/dist
     const __dirname = dirname(fileURLToPath(import.meta.url));
     const websiteDist = resolve(__dirname, "../../../examples/ai-sdk-integration/dist");
 
     app.use("/*", serveStatic({ root: websiteDist }));
   }
 
-  // Health check (headless mode only)
-  if (serverConfig.headless) {
-    app.get("/", (c) => {
-      return c.json({
-        name: "relay-mcp",
-        status: "running",
-        mode: "headless",
-        executionMode: "node-harness-only",
-        endpoints: {
-          mcp: `POST http://${serverConfig.bindAddress}:${serverConfig.port}/mcp`,
-          threads: `http://${serverConfig.bindAddress}:${serverConfig.port}/threads`,
-        },
-      });
+  // Health check
+  app.get("/", (c) => {
+    return c.json({
+      name: "relay-mcp",
+      status: "running",
+      mode: serverConfig.headless ? "headless" : "ui",
+      platform: "node",
+      endpoints: {
+        mcp: `/mcp`,
+        execute: `/execute`,
+        chat: rateLimiter ? `/chat` : null,
+        threads: `/threads`,
+        token: `/token/generate`,
+      },
     });
-  }
+  });
 
   // Start server
   const server = serve(
@@ -195,36 +246,38 @@ export async function startServer(serverConfig: ServerConfig) {
       hostname: serverConfig.bindAddress,
     },
     (info) => {
-      log.info(
-        `Server listening on http://${info.address}:${info.port}`
-      );
+      log.info(`Server listening on http://${info.address}:${info.port}`);
     }
   );
 
-  // Graceful shutdown (spec v1.3)
-  process.on("SIGTERM", async () => {
-    log.info("SIGTERM received, shutting down gracefully...");
+  // Graceful shutdown
+  const shutdown = async (signal: string) => {
+    log.info(`${signal} received, shutting down gracefully...`);
 
-    // Stop cleanup service
-    cleanupService.stop();
-
-    // Shutdown MCP manager first
     await mcpManager.shutdown();
-
-    // Dispose node executor
-    nodeExecutor.dispose();
+    await executor.dispose();
+    if (db) await db.close();
 
     server.close(() => {
       log.info("Server closed");
       process.exit(0);
     });
 
-    // Force close after grace period
     setTimeout(() => {
       log.warn("Forcing shutdown after grace period");
       process.exit(1);
-    }, 30_000); // 30s grace period
-  });
+    }, 30000);
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 
   return server;
 }
+
+// Re-export new modules
+export * from "./db/index.js";
+export * from "./execution/index.js";
+export * from "./vfs/index.js";
+export * from "./services/token-manager.js";
+export * from "./services/rate-limiter.js";

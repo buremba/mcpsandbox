@@ -32,8 +32,16 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:node": "tsc && node -e \"require('fs').copyFileSync('src/db/schema.sql', 'dist/db/schema.sql')\"",
+    "build:worker": "tsc && esbuild dist/index.worker.js --bundle --outfile=dist/worker.js --format=esm --platform=browser --external:better-sqlite3",
     "dev": "tsx watch src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "dev:node": "tsx watch src/index.node.ts",
+    "start": "node dist/index.node.js",
+    "start:node": "node dist/index.node.js",
+    "deploy:cf": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "docker:build": "docker build -t relay-mcp -f Dockerfile ../..",
+    "docker:run": "docker run -p 3000:3000 -e ENCRYPTION_SECRET=dev-secret relay-mcp"
   },
   "dependencies": {
     "@onemcp/ai-sdk": "workspace:*",
@@ -57,9 +65,15 @@
     "undici": "^7.0.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
     "@types/archiver": "^6.0.2",
+    "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "wrangler": "^3.91.0"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^11.6.0"
   }
 }

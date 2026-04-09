@@ -15,9 +15,24 @@ import './index.css';
 const openaiApiKey = import.meta.env.VITE_OPENAI_API_KEY;
 const useOpenAI = openaiApiKey && openaiApiKey !== 'your-openai-api-key-here';
 
+// Relay MCP Proxy endpoint (deployed on Cloudflare Workers)
+const RELAY_MCP_PROXY_ENDPOINT = "https://relay-mcp.buremba.workers.dev/chat";
+
+// Check if relay proxy token is available from environment
+const relayProxyToken = import.meta.env.VITE_RELAY_PROXY_TOKEN;
+const useRelayProxy = relayProxyToken && relayProxyToken.length > 10;
+
 // Default widget configuration with MCP test server
 const defaultWidgetConfig = {
-  model: useOpenAI ? {
+  model: useRelayProxy ? {
+    // Use secure proxy with JWE token (API key never exposed to client)
+    provider: "openai",
+    name: import.meta.env.VITE_OPENAI_MODEL || "gpt-4o-mini",
+    secure: {
+      token: relayProxyToken,
+      proxyEndpoint: RELAY_MCP_PROXY_ENDPOINT,
+    },
+  } : useOpenAI ? {
     provider: "openai",
     name: import.meta.env.VITE_OPENAI_MODEL || "gpt-4o-mini",
     apiKey: openaiApiKey,
@@ -147,10 +162,14 @@ function App() {
     widgetConfig.model.apiKey !== 'sk-...' &&
     widgetConfig.model.apiKey.length > 10;
 
+  // Check if using secure proxy (no client-side API key needed)
+  const hasSecureProxy = widgetConfig.model?.secure?.token &&
+    widgetConfig.model.secure.proxyEndpoint;
+
   // Check if using Chrome AI or mock provider (no API key needed)
   const isChromeAI = widgetConfig.model?.provider === 'chrome';
   const isMock = widgetConfig.model?.provider === 'mock';
-  const showWidget = hasApiKey || isChromeAI || isMock;
+  const showWidget = hasApiKey || hasSecureProxy || isChromeAI || isMock;
 
   return (
     <BrowserRouter>
@@ -203,7 +222,7 @@ function App() {
             <div style={{ fontWeight: 500, marginBottom: '4px', color: 'var(--text-primary, #c9d1d9)' }}>
               Try the Chat Widget
             </div>
-            Use Chrome Built-in AI (no key needed) or enter an API key in the config.
+            Use Chrome Built-in AI (no key needed), configure a secure proxy token, or enter an API key in the config.
           </div>
         )}
       </div>
