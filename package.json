@@ -4,14 +4,19 @@
   "license": "Apache-2.0",
   "type": "module",
   "workspaces": [
+    "packages/ai-sdk",
+    "packages/mcpsandbox",
     "packages/server",
-    "packages/shared"
+    "packages/shared",
+    "packages/widget-react",
+    "docs"
   ],
   "scripts": {
-    "build": "pnpm run build:shared && pnpm run build:server && pnpm run build:widget",
+    "build": "pnpm run build:shared && pnpm run build:server && pnpm run build:widget && pnpm run build:mcpsandbox",
     "build:shared": "pnpm --filter @onemcp/shared build",
     "build:server": "pnpm --filter 1mcp build",
     "build:widget": "pnpm --filter @onemcp/widget-react build",
+    "build:mcpsandbox": "pnpm --filter mcpsandbox build",
     "dev": "pnpm --filter 1mcp-docs dev",
     "serve": "node scripts/dev-serve.js serve --no-ui",
     "dev:tmux": "bash scripts/tmux-dev.sh",
@@ -23,7 +28,9 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
+    "typecheck:mcpsandbox": "pnpm --filter mcpsandbox typecheck",
     "test": "node --test",
+    "test:mcpsandbox": "pnpm --filter mcpsandbox test",
     "prepare": "husky",
     "1mcp": "node packages/server/dist/cli/index.js"
   },
