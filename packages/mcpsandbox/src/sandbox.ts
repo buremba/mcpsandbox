@@ -21,6 +21,7 @@ import type {
   SandboxConfig,
   SandboxFsApi,
   SandboxGitApi,
+  SandboxRunOptions,
   SandboxResult,
   SecretRef,
 } from "./types";
@@ -174,6 +175,31 @@ function hostAllowed(hostname: string, allowList: string[]): boolean {
   );
 }
 
+function isUrlPrefix(value: string): boolean {
+  return value.includes("://");
+}
+
+function toAllowedUrlPrefixes(allowList: string[]): string[] {
+  return allowList.flatMap((entry) => {
+    if (isUrlPrefix(entry)) {
+      return [entry];
+    }
+
+    return [`https://${entry}/`, `http://${entry}/`];
+  });
+}
+
+function networkEntryMatchesUrl(url: URL, entry: string): boolean {
+  if (isUrlPrefix(entry)) {
+    return url.href.startsWith(entry);
+  }
+
+  return (
+    url.hostname === entry ||
+    (entry.startsWith(".") && url.hostname.endsWith(entry.slice(1)))
+  );
+}
+
 export async function defaultHttpMcpInvoker(
   invocation: McpToolInvocation
 ): Promise<unknown> {
@@ -305,15 +331,13 @@ class McpSandboxImpl implements Sandbox {
     const network =
       this.networkAllowList.length > 0
         ? {
-            allowedUrlPrefixes: this.networkAllowList.flatMap((domain) => [
-              `https://${domain}/`,
-              `http://${domain}/`,
-            ]),
+            allowedUrlPrefixes: toAllowedUrlPrefixes(this.networkAllowList),
             allowedMethods: config.network?.methods ?? [...DEFAULT_METHODS],
           }
         : undefined;
 
     this.bash = new Bash({
+      ...(config.bash ?? {}),
       fs: fileSystem.fs,
       cwd: "/",
       env: this.publicEnv,
@@ -330,7 +354,7 @@ class McpSandboxImpl implements Sandbox {
     this.disposed = true;
   }
 
-  async run(command: string, options?: { cwd?: string; stdin?: string; env?: Record<string, string> }) {
+  async run(command: string, options?: SandboxRunOptions) {
     if (this.disposed) {
       throw new Error("Sandbox has been disposed");
     }
@@ -339,6 +363,10 @@ class McpSandboxImpl implements Sandbox {
       cwd: options?.cwd ? toVirtualPath(options.cwd) : "/",
       stdin: options?.stdin,
       env: options?.env,
+      replaceEnv: options?.replaceEnv,
+      rawScript: options?.rawScript,
+      signal: options?.signal,
+      args: options?.args,
     });
 
     return {
@@ -480,7 +508,7 @@ class McpSandboxImpl implements Sandbox {
       const serverUrl = new URL(binding.options.server);
       if (
         this.networkAllowList.length > 0 &&
-        !hostAllowed(serverUrl.hostname, this.networkAllowList)
+        !this.networkAllowList.some((entry) => networkEntryMatchesUrl(serverUrl, entry))
       ) {
         throw new Error(
           `MCP host ${serverUrl.hostname} is blocked by sandbox network policy`
