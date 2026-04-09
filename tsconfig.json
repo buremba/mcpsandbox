@@ -20,6 +20,8 @@
       "@relay-mcp/server/*": ["packages/server/src/*"],
       "@relay-mcp/browser-harness": ["packages/browser-harness/src/index.ts"],
       "@relay-mcp/browser-harness/*": ["packages/browser-harness/src/*"],
+      "mcpsandbox": ["packages/mcpsandbox/src/index.ts"],
+      "mcpsandbox/*": ["packages/mcpsandbox/src/*"],
       "@relay-mcp/shared": ["packages/shared/src/index.ts"],
       "@relay-mcp/shared/*": ["packages/shared/src/*"]
     }
