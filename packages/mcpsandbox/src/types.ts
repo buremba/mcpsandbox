@@ -1,4 +1,4 @@
-import type { IFileSystem } from "just-bash";
+import type { ExecOptions, IFileSystem, BashOptions } from "just-bash";
 
 export interface SecretEnvRef {
   readonly kind: "env";
@@ -15,11 +15,10 @@ export interface SandboxResult {
   exitCode: number;
 }
 
-export interface SandboxRunOptions {
-  cwd?: string;
-  stdin?: string;
-  env?: Record<string, string>;
-}
+export type SandboxRunOptions = Pick<
+  ExecOptions,
+  "cwd" | "stdin" | "env" | "replaceEnv" | "rawScript" | "signal" | "args"
+>;
 
 export interface SandboxFsApi {
   read(path: string): Promise<string>;
@@ -71,6 +70,11 @@ export interface SandboxIntegrationsConfig {
   git?: boolean;
 }
 
+export type SandboxBashConfig = Omit<
+  BashOptions,
+  "fs" | "files" | "env" | "cwd" | "network" | "customCommands"
+>;
+
 export interface McpToolInvocation {
   server: string;
   tool: string;
@@ -88,6 +92,7 @@ export interface SandboxConfig {
   name?: string;
   filesystem?: FilesystemConfig;
   network?: SandboxNetworkConfig;
+  bash?: SandboxBashConfig;
   integrations?: SandboxIntegrationsConfig;
   env?: Record<string, EnvValue>;
   commands?: Record<string, SandboxCommandBinding>;

@@ -124,7 +124,7 @@ describe("mcpsandbox", () => {
 
       const sandbox = await createSandbox({
         filesystem: { root, writable: true },
-        network: { allow: ["127.0.0.1"] },
+        network: { allow: [`http://127.0.0.1:${address.port}/`] },
         commands: {
           "github.search": mcp({
             server: `http://127.0.0.1:${address.port}`,
@@ -147,6 +147,24 @@ describe("mcpsandbox", () => {
         });
       });
     }
+  });
+
+  test("passes through just-bash execution limits", async () => {
+    const root = createTempDir("mcpsandbox-limits-");
+    const sandbox = await createSandbox({
+      filesystem: { root, writable: true },
+      bash: {
+        executionLimits: {
+          maxLoopIterations: 2,
+        },
+      },
+    });
+
+    const result = await sandbox.run("while true; do echo x; done");
+
+    expect(result.exitCode).toBe(126);
+    expect(result.stdout).toBe("x\nx\n");
+    expect(result.stderr).toContain("too many iterations");
   });
 
   test("supports git as a built-in integration", async () => {
