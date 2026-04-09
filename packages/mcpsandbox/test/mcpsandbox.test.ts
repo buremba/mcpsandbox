@@ -3,7 +3,7 @@ import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { cli, createSandbox, fn, mcp, secret } from "../src/index";
+import { cli, createSandbox, fn, mcp, provider, secret } from "../src/index";
 
 const tempDirs: string[] = [];
 
@@ -165,6 +165,22 @@ describe("mcpsandbox", () => {
     expect(result.exitCode).toBe(126);
     expect(result.stdout).toBe("x\nx\n");
     expect(result.stderr).toContain("too many iterations");
+  });
+
+  test("aliases sandbox providers to CLI-backed commands", async () => {
+    const root = createTempDir("mcpsandbox-provider-");
+    const sandbox = await createSandbox({
+      filesystem: { root, writable: true },
+      commands: {
+        "provider.smoke": provider({
+          command: process.execPath,
+          args: ["-e", "process.stdout.write('provider-ok')"],
+        }),
+      },
+    });
+
+    const result = await sandbox.run("provider.smoke");
+    expect(result.stdout).toBe("provider-ok");
   });
 
   test("supports git as a built-in integration", async () => {

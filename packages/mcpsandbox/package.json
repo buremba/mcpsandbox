@@ -15,6 +15,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "bun test test/mcpsandbox.test.ts",
+    "bench": "bun run examples/benchmark.ts",
     "demo:mixed": "bun run examples/mixed-demo.ts",
     "demo:git": "bun run examples/git-demo.ts",
     "demo:mcp": "bun run examples/mcp-demo.ts"

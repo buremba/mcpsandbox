@@ -54,3 +54,7 @@ export function cli(options: CliCommandOptions): CliCommandBinding {
     },
   };
 }
+
+export function provider(options: CliCommandOptions): CliCommandBinding {
+  return cli(options);
+}
