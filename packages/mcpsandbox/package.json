@@ -1,0 +1,30 @@
+{
+  "name": "mcpsandbox",
+  "version": "0.0.1",
+  "description": "Build tiny sandboxes from MCP tools, TypeScript functions, and CLIs.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test test/mcpsandbox.test.ts",
+    "demo:mixed": "bun run examples/mixed-demo.ts",
+    "demo:git": "bun run examples/git-demo.ts",
+    "demo:mcp": "bun run examples/mcp-demo.ts"
+  },
+  "dependencies": {
+    "just-bash": "^2.12.8"
+  },
+  "devDependencies": {
+    "@types/bun": "1.2.11",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.8.3"
+  }
+}

@@ -4,11 +4,16 @@
   "license": "Apache-2.0",
   "type": "module",
   "workspaces": [
+    "packages/ai-sdk",
+    "packages/mcpsandbox",
     "packages/server",
-    "packages/shared"
+    "packages/shared",
+    "packages/widget-react",
+    "docs"
   ],
   "scripts": {
-    "build": "make build",
+    "build": "make build && pnpm run build:mcpsandbox",
+    "build:mcpsandbox": "pnpm --filter mcpsandbox build",
     "dev": "make dev",
     "serve": "node scripts/dev-serve.js serve --no-ui",
     "init": "node scripts/dev-serve.js init",
@@ -19,7 +24,9 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
+    "typecheck:mcpsandbox": "pnpm --filter mcpsandbox typecheck",
     "test": "node --test",
+    "test:mcpsandbox": "pnpm --filter mcpsandbox test",
     "prepare": "husky",
     "1mcp": "node packages/server/dist/cli/index.js"
   },
