@@ -10,8 +10,8 @@ async function main() {
     const sandbox = await createSandbox({
       name: "mixed-demo",
       filesystem: {
+        mode: "readwrite",
         root,
-        writable: true,
       },
       commands: {
         slugify: fn({

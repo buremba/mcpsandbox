@@ -9,7 +9,7 @@ async function main() {
   try {
     const sandbox = await createSandbox({
       name: "git-demo",
-      filesystem: { root, writable: true },
+      filesystem: { mode: "readwrite", root },
       integrations: { git: true },
     });
 

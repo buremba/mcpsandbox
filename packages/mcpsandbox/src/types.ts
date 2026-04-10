@@ -52,8 +52,8 @@ export interface Sandbox {
 }
 
 export interface FilesystemConfig {
+  mode?: "memory" | "readonly" | "readwrite";
   root?: string;
-  writable?: boolean;
   allow?: string[];
   deny?: string[];
   maxFileReadSize?: number;
