@@ -19,7 +19,33 @@ Build tiny sandboxes from MCP tools, TypeScript functions, CLIs, provider adapte
 
 Today, `mcpsandbox` supports the `just-bash` features that fit this model cleanly, especially execution limits and other non-conflicting runtime toggles. For example, `bash.executionLimits` is passed straight through to `just-bash`, while `filesystem`, `env`, `network`, and generated commands stay owned by `mcpsandbox`.
 
-## Quick Start
+## Simple Example
+
+Map an MCP tool into a bash-like command and call it with `sandbox.run(...)`.
+
+```ts
+import { createSandbox, mcp } from "mcpsandbox";
+
+const sandbox = await createSandbox({
+  network: {
+    allow: ["https://api.example.com/mcp/"],
+  },
+  commands: {
+    "issues.search": mcp({
+      server: "https://api.example.com/mcp",
+      tool: "search_issues",
+      input: { query: "$1" },
+    }),
+  },
+});
+
+const result = await sandbox.run('issues.search "billing bug"');
+console.log(result.stdout);
+```
+
+## Full Example
+
+This example shows the main pieces together: filesystem mode, secrets, a TypeScript handler, an MCP command, a local CLI, and `git`.
 
 ```ts
 import { createSandbox, fn, mcp, cli, provider, secret } from "mcpsandbox";
@@ -69,248 +95,32 @@ await sandbox.run('slugify "Hello World"');
 await sandbox.run("git status");
 ```
 
-## API Shape
+## Core Ideas
 
 ```ts
 import { createSandbox, mcp, fn, cli, provider } from "mcpsandbox";
 ```
 
-### `createSandbox(config)`
+- `createSandbox(...)` builds a small shell-oriented sandbox
+- `mcp(...)` maps an MCP tool into a shell command
+- `fn(...)` maps a TypeScript function into a shell command
+- `cli(...)` wraps a local binary
+- `provider(...)` is a semantic alias for `cli(...)` when that command delegates work to another sandbox runtime
+- `filesystem.mode` can be `memory`, `readonly`, or `readwrite`
+- `sandbox.run(...)` executes commands in the sandbox
+- `sandbox.fs` exposes simple read, write, list, and exists helpers
 
-Creates a sandbox rooted at `filesystem.root` and backed by `just-bash`.
+## Advanced Usage
 
-```ts
-const sandbox = await createSandbox({
-  filesystem: {
-    mode: "readwrite",
-    root: "./repo",
-    allow: ["src/**", "package.json", ".git/**"],
-    deny: [".env", "secrets/**"],
-  },
-  network: {
-    allow: ["api.github.com", "https://api.example.com/v1/"],
-    methods: ["GET", "POST"],
-  },
-  bash: {
-    executionLimits: {
-      maxLoopIterations: 1000,
-    },
-    sleep: true,
-    javascript: true,
-  },
-  integrations: {
-    git: true,
-  },
-  commands: {
-    "github.search": mcp({
-      server: "https://proxy.example.com/mcp",
-      tool: "search_repositories",
-      input: { q: "$1" },
-    }),
-  },
-});
-```
+Use [ADVANCED.md](./ADVANCED.md) for:
 
-Filesystem modes:
-
-- `mode: "memory"` uses `just-bash`'s `InMemoryFs` and does not persist files to disk
-- `mode: "readonly"` uses a read-only overlay backed by `filesystem.root`
-- `mode: "readwrite"` uses direct read-write access to `filesystem.root`
-
-Examples:
-
-```ts
-const memorySandbox = await createSandbox({
-  filesystem: {
-    mode: "memory",
-    allow: ["**"],
-    deny: ["secrets/**"],
-  },
-});
-
-const readonlySandbox = await createSandbox({
-  filesystem: {
-    mode: "readonly",
-    root: "./repo",
-  },
-});
-```
-
-### `sandbox.run(command, options?)`
-
-Runs a shell command inside the sandbox.
-
-```ts
-const result = await sandbox.run('echo "hello"');
-```
-
-Run options pass through the matching safe `just-bash` execution flags:
-
-```ts
-await sandbox.run("echo $1", {
-  args: ["hello"],
-  cwd: "/",
-  stdin: "",
-});
-```
-
-### `sandbox.fs`
-
-```ts
-await sandbox.fs.write("note.txt", "hello");
-const text = await sandbox.fs.read("note.txt");
-const files = await sandbox.fs.list(".");
-```
-
-### `sandbox.git`
-
-Available when `integrations.git` is enabled.
-
-```ts
-await sandbox.git?.status(["--short"]);
-await sandbox.git?.diff();
-await sandbox.git?.log(["--oneline", "-5"]);
-```
-
-## Command Adapters
-
-### `fn(...)`
-
-Map your own TypeScript handler into a shell command.
-
-```ts
-const sandbox = await createSandbox({
-  commands: {
-    slugify: fn({
-      input: { text: "$1" },
-      handler: ({ text }: { text: string }) =>
-        text.toLowerCase().replace(/\s+/g, "-"),
-    }),
-  },
-});
-```
-
-The handler receives a `context` object with:
-
-- `context.fs` for sandbox file reads and writes
-- `context.run(...)` to run another sandbox command
-- `context.args`, `context.cwd`, `context.stdin`, and resolved `context.env`
-
-Example:
-
-```ts
-const sandbox = await createSandbox({
-  filesystem: { mode: "memory" },
-  commands: {
-    saveNote: fn({
-      input: { path: "$1", text: "$2" },
-      async handler(
-        { path, text }: { path: string; text: string },
-        context
-      ) {
-        await context.fs.write(path, text);
-        return context.fs.read(path);
-      },
-    }),
-  },
-});
-```
-
-### `mcp(...)`
-
-Map an MCP tool into a shell command.
-
-```ts
-const sandbox = await createSandbox({
-  network: { allow: ["http://127.0.0.1:3000/"] },
-  commands: {
-    "github.search": mcp({
-      server: "http://127.0.0.1:3000",
-      tool: "search_repositories",
-      input: { q: "$1" },
-    }),
-  },
-});
-```
-
-For authenticated MCP servers, keep OAuth and token refresh in your host app and inject tokens through `headers` or a custom `mcp.invokeTool`. See [MCP authentication guide](./MCP_AUTH.md).
-
-### `cli(...)`
-
-Wrap an existing host binary behind the same command surface.
-
-```ts
-const sandbox = await createSandbox({
-  commands: {
-    jq: cli({
-      command: "jq",
-      args: ["$1", "$2"],
-    }),
-  },
-});
-```
-
-### `provider(...)`
-
-`provider(...)` is a semantic alias for `cli(...)`. Use it when the command you are mapping is itself a sandbox runtime such as Daytona, Upstash Box, or Docker.
-
-```ts
-const sandbox = await createSandbox({
-  commands: {
-    "docker.node": provider({
-      command: "docker",
-      args: ["run", "--rm", "node:20-alpine", "node", "-e", "$1"],
-    }),
-  },
-});
-```
-
-## Secrets
-
-Secret references are resolved at execution time and are not exposed through the generic shell environment.
-
-```ts
-const sandbox = await createSandbox({
-  env: {
-    GITHUB_TOKEN: secret.env("GITHUB_TOKEN"),
-  },
-  commands: {
-    whoami: cli({
-      command: "node",
-      args: ["-e", "console.log(Boolean(process.env.GITHUB_TOKEN))"],
-    }),
-  },
-});
-```
-
-Mapped commands can receive those secrets. Generic shell commands do not.
-
-## Network And Limits
-
-`mcpsandbox` supports network policy and `just-bash` execution limits today.
-
-```ts
-const sandbox = await createSandbox({
-  network: {
-    allow: ["api.github.com", "https://api.example.com/v1/"],
-  },
-  bash: {
-    executionLimits: {
-      maxLoopIterations: 100,
-    },
-  },
-});
-```
-
-Current behavior:
-
-- `network.allow` is enforced for MCP server URLs
-- `network.allow` accepts either bare domains like `api.github.com` or full URL prefixes like `https://api.example.com/v1/`
-- `bash.executionLimits` is passed through directly to `just-bash`
-- other non-conflicting `just-bash` options can be supplied under `bash`
-- `filesystem.mode: "memory"` keeps shell and `context.fs` file operations in memory only
-- `integrations.git` is not available with `filesystem.mode: "memory"`
-- host-backed `cli(...)` and `provider(...)` commands still run as real host processes, so they should not be treated as sharing the in-memory filesystem
+- filesystem modes
+- command adapter details
+- secrets
+- network and limits
+- MCP auth and OAuth patterns
+- provider examples with Daytona, Upstash Box, and Docker
+- current limitations
 
 ## Performance
 
@@ -374,116 +184,6 @@ Run the same benchmark locally:
 ```bash
 pnpm --filter mcpsandbox bench
 ```
-
-## External Sandbox Providers
-
-Sometimes the local `mcpsandbox` path is exactly what you want:
-
-- you want the lowest possible dispatch overhead
-- you want local files and local CLIs
-- you want agent tools to feel like shell commands without provisioning anything else
-
-Sometimes you want to hand work off to an external sandbox provider instead:
-
-- you need a stronger isolation boundary than host-process CLI execution
-- you need a remote machine, not just local command projection
-- you need longer-lived sandboxes with pause, resume, archive, or snapshot workflows
-- you need larger compute, custom runtimes, or provider-managed networking
-- you need to run untrusted code away from the host that launched the agent
-
-That is why `provider(...)` exists. It lets `mcpsandbox` stay the orchestration layer while delegating actual execution to external sandboxes when needed.
-
-### Daytona
-
-Use Daytona when you want remote lifecycle management, start/stop/archive flows, or larger hosted sandboxes.
-
-```ts
-import { createSandbox, provider, secret } from "mcpsandbox";
-
-const sandbox = await createSandbox({
-  env: {
-    DAYTONA_API_KEY: secret.env("DAYTONA_API_KEY"),
-  },
-  commands: {
-    "daytona.create": provider({
-      command: "daytona",
-      args: ["create"],
-    }),
-    "daytona.start": provider({
-      command: "daytona",
-      args: ["start", "$1"],
-    }),
-    "daytona.delete": provider({
-      command: "daytona",
-      args: ["delete", "$1"],
-    }),
-  },
-});
-```
-
-### Upstash Box
-
-Use Upstash Box when you want durable cloud boxes with their own filesystem, process tree, network stack, and provider-managed lifecycle. If a provider does not have a native CLI flow you like, map a small adapter script through `provider(...)`.
-
-```ts
-import { createSandbox, provider, secret } from "mcpsandbox";
-
-const sandbox = await createSandbox({
-  env: {
-    UPSTASH_BOX_API_KEY: secret.env("UPSTASH_BOX_API_KEY"),
-  },
-  commands: {
-    "upstash.exec": provider({
-      command: process.execPath,
-      args: ["./scripts/upstash-box-exec.mjs", "$*"],
-    }),
-  },
-});
-```
-
-Example adapter shape:
-
-```js
-import { Box } from "@upstash/box";
-
-const box = await Box.create({ runtime: "node" });
-const command = process.argv.slice(2).join(" ");
-const result = await box.exec.command(command);
-process.stdout.write(result.stdout ?? "");
-process.stderr.write(result.stderr ?? "");
-await box.delete();
-```
-
-### Docker
-
-Use Docker when you want a local container boundary, reproducible images, or easy bind mounts for development and CI.
-
-```ts
-import { createSandbox, provider } from "mcpsandbox";
-
-const sandbox = await createSandbox({
-  commands: {
-    "docker.node": provider({
-      command: "docker",
-      args: [
-        "run",
-        "--rm",
-        "-i",
-        "node:20-alpine",
-        "node",
-        "-e",
-        "$1",
-      ],
-    }),
-  },
-});
-```
-
-## Current Limitation
-
-`cli(...)` commands execute real host binaries. That is useful for demos and lightweight local sandboxes, but it is not the same isolation level as a container or VM-backed sandbox.
-
-`provider(...)` does not change that by itself. It is a nicer way to express "this command hands execution off to another sandbox system", but the actual isolation boundary still depends on the provider you map.
 
 ## Development
 
