@@ -330,10 +330,30 @@ Local benchmark on April 9, 2026:
 | mapped `provider(...)` command (`true`) | 2.143 ms | 2.038 ms | 3.298 ms |
 | mapped `cli(...)` command (`node -e`) | 4.160 ms | 3.878 ms | 7.314 ms |
 
+Reference point from a similar local, in-process agent runtime:
+
+- Agno's published benchmark page reports agent instantiation at `3μs` and memory at `6.6 KiB` for an agent with one tool, measured 1000 times on an Apple M4 MacBook Pro in October 2025: [Agno benchmark](https://docs.agno.com/features/evals/performance/usage/performance-instantiation-with-tool)
+
+Comparison notes:
+
+- `mcpsandbox createSandbox()` at `0.067 ms` is about `67μs`
+- compared with Agno's `3μs` agent instantiation number, that is roughly `22x` higher setup overhead
+- that gap is expected because the measurements are not identical: Agno is timing lightweight agent object instantiation, while `mcpsandbox` creates a shell-backed sandbox with filesystem policy, command wiring, and optional process dispatch
+- both numbers are still in the "local fast path" bucket rather than the remote control-plane or container cold-start bucket
+
+Category comparison:
+
+| Category | Example | Typical comparison point |
+| --- | --- | --- |
+| in-process local runtime | `mcpsandbox`, Agno / AgentOS | object or sandbox creation overhead, local dispatch latency |
+| host process wrapper | `mcpsandbox` `cli(...)` / `provider(...)` | process spawn overhead on the same machine |
+| remote sandbox provider | Daytona, Upstash Box, Docker-based remotes | network round-trip, control-plane latency, container or session lifecycle |
+
 Interpretation:
 
 - the local in-process path is sub-millisecond
 - host process dispatch is still only a few milliseconds
+- Agno's published numbers are directionally consistent with the claim that local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandboxes
 - remote sandboxes will be slower on raw dispatch, because they add container startup, control-plane work, or network round-trips
 
 Run the same benchmark locally:
