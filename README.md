@@ -330,30 +330,46 @@ Local benchmark on April 9, 2026:
 | mapped `provider(...)` command (`true`) | 2.143 ms | 2.038 ms | 3.298 ms |
 | mapped `cli(...)` command (`node -e`) | 4.160 ms | 3.878 ms | 7.314 ms |
 
-Reference point from a similar local, in-process agent runtime:
+Reference point against mainstream sandbox providers:
 
-- Agno's published benchmark page reports agent instantiation at `3μs` and memory at `6.6 KiB` for an agent with one tool, measured 1000 times on an Apple M4 MacBook Pro in October 2025: [Agno benchmark](https://docs.agno.com/features/evals/performance/usage/performance-instantiation-with-tool)
+- agentOS publishes a provider comparison benchmark against E2B and Daytona in its README: [rivet-dev/agent-os](https://github.com/rivet-dev/agent-os)
+
+Published sandbox baseline from `agent-os`:
+
+- cold start vs E2B:
+
+| Percentile | agentOS | Fastest sandbox (E2B) |
+| --- | ---: | ---: |
+| p50 | 4.8 ms | 440 ms |
+| p95 | 5.6 ms | 950 ms |
+| p99 | 6.1 ms | 3,150 ms |
+
+- memory per instance vs Daytona minimum:
+
+| Workload | agentOS | Cheapest sandbox (Daytona) |
+| --- | ---: | ---: |
+| full coding agent | ~131 MB | ~1,024 MB |
+| simple shell command | ~22 MB | ~1,024 MB |
+
+How `mcpsandbox` fits into that frame:
+
+- `createSandbox()` p50 in this repo is `0.040 ms`, mean `0.067 ms`, p95 `0.090 ms`
+- built-in shell dispatch is sub-millisecond
+- host-process-backed `provider(...)` and `cli(...)` are still only low single-digit milliseconds on the local machine
+- this places `mcpsandbox` firmly in the same local fast-path category as in-process runtimes, not the remote sandbox category
 
 Comparison notes:
 
-- `mcpsandbox createSandbox()` at `0.067 ms` is about `67μs`
-- compared with Agno's `3μs` agent instantiation number, that is roughly `22x` higher setup overhead
-- that gap is expected because the measurements are not identical: Agno is timing lightweight agent object instantiation, while `mcpsandbox` creates a shell-backed sandbox with filesystem policy, command wiring, and optional process dispatch
-- both numbers are still in the "local fast path" bucket rather than the remote control-plane or container cold-start bucket
-
-Category comparison:
-
-| Category | Example | Typical comparison point |
-| --- | --- | --- |
-| in-process local runtime | `mcpsandbox`, Agno / AgentOS | object or sandbox creation overhead, local dispatch latency |
-| host process wrapper | `mcpsandbox` `cli(...)` / `provider(...)` | process spawn overhead on the same machine |
-| remote sandbox provider | Daytona, Upstash Box, Docker-based remotes | network round-trip, control-plane latency, container or session lifecycle |
+- these are not same-machine, same-runtime, same-hardware numbers, so treat them as directional rather than a head-to-head benchmark
+- `mcpsandbox` numbers above were measured on an Apple M4 Pro with Bun 1.3.5
+- `agent-os` reports its cold-start benchmark as median of 10,000 runs on an Intel i7-12700KF, and its memory baseline against Daytona minimums
+- the useful conclusion is category-level: local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandbox providers
 
 Interpretation:
 
 - the local in-process path is sub-millisecond
 - host process dispatch is still only a few milliseconds
-- Agno's published numbers are directionally consistent with the claim that local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandboxes
+- agentOS's published E2B and Daytona comparisons are directionally consistent with the claim that local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandboxes
 - remote sandboxes will be slower on raw dispatch, because they add container startup, control-plane work, or network round-trips
 
 Run the same benchmark locally:
