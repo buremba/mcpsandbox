@@ -332,8 +332,6 @@ Local benchmark on April 9, 2026:
 
 Reference point against mainstream sandbox providers:
 
-- agentOS publishes a provider comparison benchmark against E2B and Daytona in its README: [rivet-dev/agent-os](https://github.com/rivet-dev/agent-os)
-
 Published sandbox baseline from `agent-os`:
 
 - cold start vs E2B:
