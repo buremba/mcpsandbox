@@ -61,7 +61,7 @@ async function main() {
   try {
     const sandbox = await createSandbox({
       name: "mcp-demo",
-      filesystem: { root, writable: true },
+      filesystem: { mode: "readwrite", root },
       network: { allow: ["127.0.0.1"] },
       commands: {
         "github.search": mcp({

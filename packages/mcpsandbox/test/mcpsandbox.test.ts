@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from "bun:test";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { cli, createSandbox, fn, mcp, provider, secret } from "../src/index";
 
 const tempDirs: string[] = [];
@@ -24,7 +24,7 @@ describe("mcpsandbox", () => {
   test("runs function mappings and built-in shell commands together", async () => {
     const root = createTempDir("mcpsandbox-fn-");
     const sandbox = await createSandbox({
-      filesystem: { root, writable: true },
+      filesystem: { mode: "readwrite", root },
       commands: {
         slugify: fn({
           input: { text: "$1" },
@@ -46,7 +46,7 @@ describe("mcpsandbox", () => {
     process.env.MCPSANDBOX_SECRET = "top-secret";
 
     const sandbox = await createSandbox({
-      filesystem: { root, writable: true },
+      filesystem: { mode: "readwrite", root },
       env: {
         PUBLIC_NAME: "mcpsandbox",
         SECRET_NAME: secret.env("MCPSANDBOX_SECRET"),
@@ -73,8 +73,8 @@ describe("mcpsandbox", () => {
     const root = createTempDir("mcpsandbox-fs-");
     const sandbox = await createSandbox({
       filesystem: {
+        mode: "readwrite",
         root,
-        writable: true,
         allow: ["**"],
         deny: ["secrets/**"],
       },
@@ -89,6 +89,37 @@ describe("mcpsandbox", () => {
     expect(await sandbox.fs.read("safe.txt")).toBe("ok");
     expect(blocked.exitCode).toBe(1);
     expect(blocked.stderr).toContain("No such file or directory");
+  });
+
+  test("supports an in-memory filesystem mode", async () => {
+    const root = createTempDir("mcpsandbox-memory-");
+    const sandbox = await createSandbox({
+      filesystem: {
+        mode: "memory",
+        root,
+      },
+      commands: {
+        upper: fn({
+          input: { path: "$1", text: "$2" },
+          async handler(
+            { path, text }: { path: string; text: string },
+            context
+          ) {
+            await context.fs.write(path, text.toUpperCase());
+            return context.fs.read(path);
+          },
+        }),
+      },
+    });
+
+    const write = await sandbox.run('printf "hello\\n" > note.txt');
+    const custom = await sandbox.run('upper note2.txt "hello there"');
+
+    expect(write.exitCode).toBe(0);
+    expect(await sandbox.fs.read("note.txt")).toBe("hello\n");
+    expect(custom.stdout).toBe("HELLO THERE");
+    expect(existsSync(path.join(root, "note.txt"))).toBe(false);
+    expect(existsSync(path.join(root, "note2.txt"))).toBe(false);
   });
 
   test("maps MCP commands through the configured invoker", async () => {
@@ -123,7 +154,7 @@ describe("mcpsandbox", () => {
       }
 
       const sandbox = await createSandbox({
-        filesystem: { root, writable: true },
+        filesystem: { mode: "readwrite", root },
         network: { allow: [`http://127.0.0.1:${address.port}/`] },
         commands: {
           "github.search": mcp({
@@ -152,7 +183,7 @@ describe("mcpsandbox", () => {
   test("passes through just-bash execution limits", async () => {
     const root = createTempDir("mcpsandbox-limits-");
     const sandbox = await createSandbox({
-      filesystem: { root, writable: true },
+      filesystem: { mode: "readwrite", root },
       bash: {
         executionLimits: {
           maxLoopIterations: 2,
@@ -170,7 +201,7 @@ describe("mcpsandbox", () => {
   test("aliases sandbox providers to CLI-backed commands", async () => {
     const root = createTempDir("mcpsandbox-provider-");
     const sandbox = await createSandbox({
-      filesystem: { root, writable: true },
+      filesystem: { mode: "readwrite", root },
       commands: {
         "provider.smoke": provider({
           command: process.execPath,
@@ -186,7 +217,7 @@ describe("mcpsandbox", () => {
   test("supports git as a built-in integration", async () => {
     const root = createTempDir("mcpsandbox-git-");
     const sandbox = await createSandbox({
-      filesystem: { root, writable: true },
+      filesystem: { mode: "readwrite", root },
       integrations: { git: true },
     });
 
@@ -195,5 +226,16 @@ describe("mcpsandbox", () => {
 
     const status = await sandbox.git?.status(["--short"]);
     expect(status?.stdout).toContain("README.txt");
+  });
+
+  test("rejects git integration with in-memory filesystem mode", async () => {
+    const root = createTempDir("mcpsandbox-memory-git-");
+
+    await expect(
+      createSandbox({
+        filesystem: { mode: "memory", root },
+        integrations: { git: true },
+      })
+    ).rejects.toThrow("integrations.git is not supported");
   });
 });

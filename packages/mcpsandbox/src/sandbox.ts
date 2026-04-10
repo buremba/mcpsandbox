@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { Bash, OverlayFs, ReadWriteFs, defineCommand } from "just-bash";
+import { Bash, InMemoryFs, OverlayFs, ReadWriteFs, defineCommand } from "just-bash";
 import type { CommandContext, CustomCommand, IFileSystem } from "just-bash";
 import { PolicyFileSystem } from "./policy-fs";
 import { runHostCommand } from "./process";
@@ -144,23 +144,26 @@ function createFileSystem(
   root: string,
   config: FilesystemConfig
 ): { fs: IFileSystem } {
-  const writable = config.writable !== false;
+  const mode = config.mode ?? "readwrite";
   const allowPatterns = config.allow ?? DEFAULT_ALLOW_PATTERNS;
   const denyPatterns = config.deny ?? [];
 
-  const baseFs = writable
-    ? new ReadWriteFs({
-        root,
-        maxFileReadSize: config.maxFileReadSize,
-        allowSymlinks: config.allowSymlinks,
-      })
-    : new OverlayFs({
-        root,
-        mountPoint: "/",
-        readOnly: true,
-        maxFileReadSize: config.maxFileReadSize,
-        allowSymlinks: config.allowSymlinks,
-      });
+  const baseFs =
+    mode === "memory"
+      ? new InMemoryFs()
+      : mode === "readonly"
+        ? new OverlayFs({
+            root,
+            mountPoint: "/",
+            readOnly: true,
+            maxFileReadSize: config.maxFileReadSize,
+            allowSymlinks: config.allowSymlinks,
+          })
+        : new ReadWriteFs({
+            root,
+            maxFileReadSize: config.maxFileReadSize,
+            allowSymlinks: config.allowSymlinks,
+          });
 
   return {
     fs: new PolicyFileSystem(baseFs, allowPatterns, denyPatterns),
@@ -302,9 +305,16 @@ class McpSandboxImpl implements Sandbox {
 
   constructor(config: SandboxConfig) {
     const filesystemConfig = config.filesystem ?? {};
+    const filesystemMode = filesystemConfig.mode ?? "readwrite";
     const root = path.resolve(filesystemConfig.root ?? process.cwd());
     if (!fs.existsSync(root)) {
       fs.mkdirSync(root, { recursive: true });
+    }
+
+    if (filesystemMode === "memory" && config.integrations?.git) {
+      throw new Error(
+        "integrations.git is not supported with filesystem.mode='memory'"
+      );
     }
 
     this.root = root;

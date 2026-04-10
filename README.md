@@ -7,7 +7,7 @@ Build tiny sandboxes from MCP tools, TypeScript functions, CLIs, provider adapte
 ## What It Supports
 
 - `just-bash` as the execution engine
-- Built-in filesystem sandboxing rooted at a chosen directory
+- Built-in filesystem modes for in-memory, read-only overlay, or read-write disk-backed sandboxes
 - Built-in `git` integration
 - MCP-backed commands via `mcp(...)`
 - TypeScript handlers via `fn(...)`
@@ -26,8 +26,8 @@ import { createSandbox, fn, mcp, cli, provider, secret } from "mcpsandbox";
 
 const sandbox = await createSandbox({
   filesystem: {
+    mode: "readwrite",
     root: "./workspace",
-    writable: true,
   },
   network: {
     allow: ["api.github.com"],
@@ -82,8 +82,8 @@ Creates a sandbox rooted at `filesystem.root` and backed by `just-bash`.
 ```ts
 const sandbox = await createSandbox({
   filesystem: {
+    mode: "readwrite",
     root: "./repo",
-    writable: true,
     allow: ["src/**", "package.json", ".git/**"],
     deny: [".env", "secrets/**"],
   },
@@ -107,6 +107,31 @@ const sandbox = await createSandbox({
       tool: "search_repositories",
       input: { q: "$1" },
     }),
+  },
+});
+```
+
+Filesystem modes:
+
+- `mode: "memory"` uses `just-bash`'s `InMemoryFs` and does not persist files to disk
+- `mode: "readonly"` uses a read-only overlay backed by `filesystem.root`
+- `mode: "readwrite"` uses direct read-write access to `filesystem.root`
+
+Examples:
+
+```ts
+const memorySandbox = await createSandbox({
+  filesystem: {
+    mode: "memory",
+    allow: ["**"],
+    deny: ["secrets/**"],
+  },
+});
+
+const readonlySandbox = await createSandbox({
+  filesystem: {
+    mode: "readonly",
+    root: "./repo",
   },
 });
 ```
@@ -151,7 +176,7 @@ await sandbox.git?.log(["--oneline", "-5"]);
 
 ### `fn(...)`
 
-Map a TypeScript handler into a shell command.
+Map your own TypeScript handler into a shell command.
 
 ```ts
 const sandbox = await createSandbox({
@@ -160,6 +185,32 @@ const sandbox = await createSandbox({
       input: { text: "$1" },
       handler: ({ text }: { text: string }) =>
         text.toLowerCase().replace(/\s+/g, "-"),
+    }),
+  },
+});
+```
+
+The handler receives a `context` object with:
+
+- `context.fs` for sandbox file reads and writes
+- `context.run(...)` to run another sandbox command
+- `context.args`, `context.cwd`, `context.stdin`, and resolved `context.env`
+
+Example:
+
+```ts
+const sandbox = await createSandbox({
+  filesystem: { mode: "memory" },
+  commands: {
+    saveNote: fn({
+      input: { path: "$1", text: "$2" },
+      async handler(
+        { path, text }: { path: string; text: string },
+        context
+      ) {
+        await context.fs.write(path, text);
+        return context.fs.read(path);
+      },
     }),
   },
 });
@@ -255,6 +306,9 @@ Current behavior:
 - `network.allow` accepts either bare domains like `api.github.com` or full URL prefixes like `https://api.example.com/v1/`
 - `bash.executionLimits` is passed through directly to `just-bash`
 - other non-conflicting `just-bash` options can be supplied under `bash`
+- `filesystem.mode: "memory"` keeps shell and `context.fs` file operations in memory only
+- `integrations.git` is not available with `filesystem.mode: "memory"`
+- host-backed `cli(...)` and `provider(...)` commands still run as real host processes, so they should not be treated as sharing the in-memory filesystem
 
 ## Performance
 

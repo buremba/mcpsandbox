@@ -39,13 +39,13 @@ const root = createTempDir("mcpsandbox-bench-");
 try {
   const createTimes = await measure(50, async () => {
     const sandbox = await createSandbox({
-      filesystem: { root, writable: true },
+      filesystem: { mode: "readwrite", root },
     });
     await sandbox.dispose();
   });
 
   const sandbox = await createSandbox({
-    filesystem: { root, writable: true },
+    filesystem: { mode: "readwrite", root },
     commands: {
       slugify: fn({
         input: { text: "$1" },
