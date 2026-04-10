@@ -334,18 +334,18 @@ Reference point against mainstream sandbox providers:
 
 Representative provider comparison:
 
-| Percentile | `mcpsandbox createSandbox()` | Fastest remote sandbox (E2B) |
+| Percentile | `mcpsandbox` | Fastest Sandbox (E2B) | Speedup |
 | --- | ---: | ---: |
-| p50 | 0.040 ms | 440 ms |
-| p95 | 0.090 ms | 950 ms |
-| p99 | n/a | 3,150 ms |
+| p50 | 4.8 ms | 440 ms | 92x faster |
+| p95 | 5.6 ms | 950 ms | 170x faster |
+| p99 | 6.1 ms | 3,150 ms | 516x faster |
 
 Memory per instance:
 
-| Workload | `mcpsandbox` | Cheapest remote sandbox (Daytona) |
+| Workload | `mcpsandbox` | Cheapest Sandbox (Daytona) | Reduction |
 | --- | ---: | ---: |
-| full coding agent | ~131 MB | ~1,024 MB |
-| simple shell command | ~22 MB | ~1,024 MB |
+| full coding agent | ~131 MB | ~1,024 MB | 8x smaller |
+| simple shell command | ~22 MB | ~1,024 MB | 47x smaller |
 
 How `mcpsandbox` fits into that frame:
 
