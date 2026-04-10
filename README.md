@@ -350,7 +350,6 @@ Comparison notes:
 
 - these are not same-machine, same-runtime, same-hardware numbers, so treat them as directional rather than a head-to-head benchmark
 - `mcpsandbox` numbers above were measured on an Apple M4 Pro with Bun 1.3.5
-- the remote sandbox baseline above comes from the published benchmark in `rivet-dev/agent-os`, which compares local runtime cold start against E2B and Daytona provider categories
 - the useful conclusion is category-level: local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandbox providers
 
 Interpretation:
