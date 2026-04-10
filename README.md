@@ -332,22 +332,12 @@ Local benchmark on April 9, 2026:
 
 Reference point against mainstream sandbox providers:
 
-Published sandbox baseline from `agent-os`:
+Representative cold-start baseline:
 
-- cold start vs E2B:
-
-| Percentile | agentOS | Fastest sandbox (E2B) |
+| Percentile | `mcpsandbox createSandbox()` | Fastest remote sandbox (E2B) |
 | --- | ---: | ---: |
-| p50 | 4.8 ms | 440 ms |
-| p95 | 5.6 ms | 950 ms |
-| p99 | 6.1 ms | 3,150 ms |
-
-- memory per instance vs Daytona minimum:
-
-| Workload | agentOS | Cheapest sandbox (Daytona) |
-| --- | ---: | ---: |
-| full coding agent | ~131 MB | ~1,024 MB |
-| simple shell command | ~22 MB | ~1,024 MB |
+| p50 | 0.040 ms | 440 ms |
+| p95 | 0.090 ms | 950 ms |
 
 How `mcpsandbox` fits into that frame:
 
@@ -360,14 +350,14 @@ Comparison notes:
 
 - these are not same-machine, same-runtime, same-hardware numbers, so treat them as directional rather than a head-to-head benchmark
 - `mcpsandbox` numbers above were measured on an Apple M4 Pro with Bun 1.3.5
-- `agent-os` reports its cold-start benchmark as median of 10,000 runs on an Intel i7-12700KF, and its memory baseline against Daytona minimums
+- the remote sandbox baseline above comes from the published benchmark in `rivet-dev/agent-os`, which compares local runtime cold start against E2B and Daytona provider categories
 - the useful conclusion is category-level: local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandbox providers
 
 Interpretation:
 
 - the local in-process path is sub-millisecond
 - host process dispatch is still only a few milliseconds
-- agentOS's published E2B and Daytona comparisons are directionally consistent with the claim that local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandboxes
+- published E2B and Daytona comparisons are directionally consistent with the claim that local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandboxes
 - remote sandboxes will be slower on raw dispatch, because they add container startup, control-plane work, or network round-trips
 
 Run the same benchmark locally:
