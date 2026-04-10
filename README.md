@@ -233,6 +233,8 @@ const sandbox = await createSandbox({
 });
 ```
 
+For authenticated MCP servers, keep OAuth and token refresh in your host app and inject tokens through `headers` or a custom `mcp.invokeTool`. See [MCP authentication guide](./MCP_AUTH.md).
+
 ### `cli(...)`
 
 Wrap an existing host binary behind the same command surface.
