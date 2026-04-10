@@ -332,12 +332,20 @@ Local benchmark on April 9, 2026:
 
 Reference point against mainstream sandbox providers:
 
-Representative cold-start baseline:
+Representative provider comparison:
 
 | Percentile | `mcpsandbox createSandbox()` | Fastest remote sandbox (E2B) |
 | --- | ---: | ---: |
 | p50 | 0.040 ms | 440 ms |
 | p95 | 0.090 ms | 950 ms |
+| p99 | n/a | 3,150 ms |
+
+Memory per instance:
+
+| Workload | `mcpsandbox` | Cheapest remote sandbox (Daytona) |
+| --- | ---: | ---: |
+| full coding agent | ~131 MB | ~1,024 MB |
+| simple shell command | ~22 MB | ~1,024 MB |
 
 How `mcpsandbox` fits into that frame:
 
