@@ -34,7 +34,7 @@ async function measure(
   return values;
 }
 
-const root = createTempDir("mcpsandbox-bench-");
+const root = createTempDir("mcpbash-bench-");
 
 try {
   const createTimes = await measure(50, async () => {
@@ -86,7 +86,7 @@ try {
   await sandbox.dispose();
 
   const result = {
-    machine: process.env.MCPSANDBOX_BENCH_MACHINE ?? "Apple M4 Pro",
+    machine: process.env.MCPBASH_BENCH_MACHINE ?? "Apple M4 Pro",
     date: "2026-04-09",
     runtime: {
       bun: Bun.version,

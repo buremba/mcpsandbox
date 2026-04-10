@@ -1,8 +1,8 @@
-# mcpsandbox
+# mcpbash
 
 Build tiny sandboxes from MCP tools, TypeScript functions, CLIs, provider adapters, and `just-bash`.
 
-`mcpsandbox` gives you a lightweight sandbox object inspired by Daytona-style ergonomics, but built around command projection instead of a full VM or container. You map capabilities into a minimal runtime, then let an agent use them through shell commands and a small typed API.
+`mcpbash` gives you a lightweight sandbox object inspired by Daytona-style ergonomics, but built around command projection instead of a full VM or container. You map capabilities into a minimal runtime, then let an agent use them through shell commands and a small typed API.
 
 ## What It Supports
 
@@ -17,14 +17,14 @@ Build tiny sandboxes from MCP tools, TypeScript functions, CLIs, provider adapte
 - Safe passthrough for non-conflicting `just-bash` options through `bash`
 - Secret references resolved at runtime for mapped commands
 
-Today, `mcpsandbox` supports the `just-bash` features that fit this model cleanly, especially execution limits and other non-conflicting runtime toggles. For example, `bash.executionLimits` is passed straight through to `just-bash`, while `filesystem`, `env`, `network`, and generated commands stay owned by `mcpsandbox`.
+Today, `mcpbash` supports the `just-bash` features that fit this model cleanly, especially execution limits and other non-conflicting runtime toggles. For example, `bash.executionLimits` is passed straight through to `just-bash`, while `filesystem`, `env`, `network`, and generated commands stay owned by `mcpbash`.
 
 ## Simple Example
 
 Map an MCP tool into a bash-like command and call it with `sandbox.run(...)`.
 
 ```ts
-import { createSandbox, mcp } from "mcpsandbox";
+import { createSandbox, mcp } from "mcpbash";
 
 const sandbox = await createSandbox({
   network: {
@@ -48,7 +48,7 @@ console.log(result.stdout);
 This example shows the main pieces together: filesystem mode, secrets, a TypeScript handler, an MCP command, a local CLI, and `git`.
 
 ```ts
-import { createSandbox, fn, mcp, cli, provider, secret } from "mcpsandbox";
+import { createSandbox, fn, mcp, cli, provider, secret } from "mcpbash";
 
 const sandbox = await createSandbox({
   filesystem: {
@@ -98,7 +98,7 @@ await sandbox.run("git status");
 ## Core Ideas
 
 ```ts
-import { createSandbox, mcp, fn, cli, provider } from "mcpsandbox";
+import { createSandbox, mcp, fn, cli, provider } from "mcpbash";
 ```
 
 - `createSandbox(...)` builds a small shell-oriented sandbox
@@ -132,7 +132,7 @@ Local benchmark on April 9, 2026:
 
 - machine: Apple M4 Pro
 - runtime: Bun 1.3.5
-- package: `packages/mcpsandbox/examples/benchmark.ts`
+- package: `packages/mcpbash/examples/benchmark.ts`
 
 | Operation | Mean | P50 | P95 |
 | --- | ---: | ---: | ---: |
@@ -146,7 +146,7 @@ Reference point against mainstream sandbox providers:
 
 Representative provider comparison:
 
-| Percentile | `mcpsandbox` | Fastest Sandbox (E2B) | Speedup |
+| Percentile | `mcpbash` | Fastest Sandbox (E2B) | Speedup |
 | --- | ---: | ---: |
 | p50 | 4.8 ms | 440 ms | 92x faster |
 | p95 | 5.6 ms | 950 ms | 170x faster |
@@ -154,22 +154,22 @@ Representative provider comparison:
 
 Memory per instance:
 
-| Workload | `mcpsandbox` | Cheapest Sandbox (Daytona) | Reduction |
+| Workload | `mcpbash` | Cheapest Sandbox (Daytona) | Reduction |
 | --- | ---: | ---: |
 | full coding agent | ~131 MB | ~1,024 MB | 8x smaller |
 | simple shell command | ~22 MB | ~1,024 MB | 47x smaller |
 
-How `mcpsandbox` fits into that frame:
+How `mcpbash` fits into that frame:
 
 - `createSandbox()` p50 in this repo is `0.040 ms`, mean `0.067 ms`, p95 `0.090 ms`
 - built-in shell dispatch is sub-millisecond
 - host-process-backed `provider(...)` and `cli(...)` are still only low single-digit milliseconds on the local machine
-- this places `mcpsandbox` firmly in the same local fast-path category as in-process runtimes, not the remote sandbox category
+- this places `mcpbash` firmly in the same local fast-path category as in-process runtimes, not the remote sandbox category
 
 Comparison notes:
 
 - these are not same-machine, same-runtime, same-hardware numbers, so treat them as directional rather than a head-to-head benchmark
-- `mcpsandbox` numbers above were measured on an Apple M4 Pro with Bun 1.3.5
+- `mcpbash` numbers above were measured on an Apple M4 Pro with Bun 1.3.5
 - the useful conclusion is category-level: local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandbox providers
 
 Interpretation:
@@ -182,18 +182,18 @@ Interpretation:
 Run the same benchmark locally:
 
 ```bash
-pnpm --filter mcpsandbox bench
+pnpm --filter mcpbash bench
 ```
 
 ## Development
 
 ```bash
 pnpm install
-pnpm --filter mcpsandbox typecheck
-pnpm --filter mcpsandbox build
-pnpm --filter mcpsandbox test
-pnpm --filter mcpsandbox bench
-pnpm --filter mcpsandbox demo:mixed
-pnpm --filter mcpsandbox demo:git
-pnpm --filter mcpsandbox demo:mcp
+pnpm --filter mcpbash typecheck
+pnpm --filter mcpbash build
+pnpm --filter mcpbash test
+pnpm --filter mcpbash bench
+pnpm --filter mcpbash demo:mixed
+pnpm --filter mcpbash demo:git
+pnpm --filter mcpbash demo:mcp
 ```

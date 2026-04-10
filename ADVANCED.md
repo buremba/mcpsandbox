@@ -1,17 +1,17 @@
 # Advanced Guide
 
-This guide collects the deeper `mcpsandbox` features so the main README can stay short.
+This guide collects the deeper `mcpbash` features so the main README can stay short.
 
 ## Filesystem Modes
 
-`mcpsandbox` supports three filesystem modes:
+`mcpbash` supports three filesystem modes:
 
 - `memory`: in-memory filesystem using `just-bash` `InMemoryFs`
 - `readonly`: read-only overlay backed by `filesystem.root`
 - `readwrite`: direct read-write access to `filesystem.root`
 
 ```ts
-import { createSandbox } from "mcpsandbox";
+import { createSandbox } from "mcpbash";
 
 const memorySandbox = await createSandbox({
   filesystem: {
@@ -45,7 +45,7 @@ Notes:
 ## Core API
 
 ```ts
-import { createSandbox, mcp, fn, cli, provider, secret } from "mcpsandbox";
+import { createSandbox, mcp, fn, cli, provider, secret } from "mcpbash";
 ```
 
 ### `sandbox.run(command, options?)`
@@ -83,7 +83,7 @@ await sandbox.git?.log(["--oneline", "-5"]);
 Map your own TypeScript handler into a shell command.
 
 ```ts
-import { createSandbox, fn } from "mcpsandbox";
+import { createSandbox, fn } from "mcpbash";
 
 const sandbox = await createSandbox({
   filesystem: { mode: "memory" },
@@ -113,7 +113,7 @@ The handler receives:
 Map an MCP tool into a shell command.
 
 ```ts
-import { createSandbox, mcp } from "mcpsandbox";
+import { createSandbox, mcp } from "mcpbash";
 
 const sandbox = await createSandbox({
   network: { allow: ["https://api.example.com/mcp/"] },
@@ -132,7 +132,7 @@ const sandbox = await createSandbox({
 Wrap an existing host binary behind the same command surface.
 
 ```ts
-import { cli, createSandbox } from "mcpsandbox";
+import { cli, createSandbox } from "mcpbash";
 
 const sandbox = await createSandbox({
   commands: {
@@ -149,7 +149,7 @@ const sandbox = await createSandbox({
 `provider(...)` is a semantic alias for `cli(...)`. Use it when the command you are mapping is itself a sandbox runtime such as Daytona, Upstash Box, or Docker.
 
 ```ts
-import { createSandbox, provider } from "mcpsandbox";
+import { createSandbox, provider } from "mcpbash";
 
 const sandbox = await createSandbox({
   commands: {
@@ -166,7 +166,7 @@ const sandbox = await createSandbox({
 Secret references are resolved at execution time and are not exposed through the generic shell environment.
 
 ```ts
-import { cli, createSandbox, secret } from "mcpsandbox";
+import { cli, createSandbox, secret } from "mcpbash";
 
 const sandbox = await createSandbox({
   env: {
@@ -185,10 +185,10 @@ Mapped commands can receive those secrets. Generic shell commands do not.
 
 ## Network And Limits
 
-`mcpsandbox` supports network policy and `just-bash` execution limits today.
+`mcpbash` supports network policy and `just-bash` execution limits today.
 
 ```ts
-import { createSandbox } from "mcpsandbox";
+import { createSandbox } from "mcpbash";
 
 const sandbox = await createSandbox({
   network: {
@@ -211,7 +211,7 @@ Current behavior:
 
 ## MCP Authentication
 
-`mcpsandbox` does not manage OAuth sessions, token refresh, or provider-specific login flows for MCP servers.
+`mcpbash` does not manage OAuth sessions, token refresh, or provider-specific login flows for MCP servers.
 
 The recommended pattern is:
 
@@ -219,7 +219,7 @@ The recommended pattern is:
 - store refresh and access tokens in your app
 - inject a valid access token into MCP calls through `mcp.invokeTool`
 
-This keeps `mcpsandbox` focused on command projection and execution, while your application owns auth state.
+This keeps `mcpbash` focused on command projection and execution, while your application owns auth state.
 
 ### Full Example
 
@@ -235,7 +235,7 @@ import {
   defaultHttpMcpInvoker,
   mcp,
   type McpToolInvocation,
-} from "mcpsandbox";
+} from "mcpbash";
 
 type OAuthSession = {
   accessToken: string;
@@ -332,7 +332,7 @@ export async function createUserSandbox(userId: string) {
 If you already have a stable API key or a bearer token and do not need refresh logic, inject it directly in `headers`:
 
 ```ts
-import { createSandbox, mcp, secret } from "mcpsandbox";
+import { createSandbox, mcp, secret } from "mcpbash";
 
 const sandbox = await createSandbox({
   commands: {
@@ -350,12 +350,12 @@ const sandbox = await createSandbox({
 
 ## External Sandbox Providers
 
-Use `provider(...)` when `mcpsandbox` should stay the orchestration layer while actual execution happens in another sandbox system.
+Use `provider(...)` when `mcpbash` should stay the orchestration layer while actual execution happens in another sandbox system.
 
 ### Daytona
 
 ```ts
-import { createSandbox, provider, secret } from "mcpsandbox";
+import { createSandbox, provider, secret } from "mcpbash";
 
 const sandbox = await createSandbox({
   env: {
@@ -377,7 +377,7 @@ const sandbox = await createSandbox({
 ### Upstash Box
 
 ```ts
-import { createSandbox, provider, secret } from "mcpsandbox";
+import { createSandbox, provider, secret } from "mcpbash";
 
 const sandbox = await createSandbox({
   env: {
@@ -395,7 +395,7 @@ const sandbox = await createSandbox({
 ### Docker
 
 ```ts
-import { createSandbox, provider } from "mcpsandbox";
+import { createSandbox, provider } from "mcpbash";
 
 const sandbox = await createSandbox({
   commands: {

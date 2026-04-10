@@ -4,7 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { cli, createSandbox, fn } from "../src/index";
 
 async function main() {
-  const root = await mkdtemp(path.join(os.tmpdir(), "mcpsandbox-mixed-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "mcpbash-mixed-"));
 
   try {
     const sandbox = await createSandbox({

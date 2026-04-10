@@ -17,12 +17,12 @@ afterEach(() => {
   for (const dir of tempDirs.splice(0)) {
     rmSync(dir, { recursive: true, force: true });
   }
-  delete process.env.MCPSANDBOX_SECRET;
+  delete process.env.MCPBASH_SECRET;
 });
 
-describe("mcpsandbox", () => {
+describe("mcpbash", () => {
   test("runs function mappings and built-in shell commands together", async () => {
-    const root = createTempDir("mcpsandbox-fn-");
+    const root = createTempDir("mcpbash-fn-");
     const sandbox = await createSandbox({
       filesystem: { mode: "readwrite", root },
       commands: {
@@ -42,14 +42,14 @@ describe("mcpsandbox", () => {
   });
 
   test("does not expose secret env values to generic shell output", async () => {
-    const root = createTempDir("mcpsandbox-secret-");
-    process.env.MCPSANDBOX_SECRET = "top-secret";
+    const root = createTempDir("mcpbash-secret-");
+    process.env.MCPBASH_SECRET = "top-secret";
 
     const sandbox = await createSandbox({
       filesystem: { mode: "readwrite", root },
       env: {
-        PUBLIC_NAME: "mcpsandbox",
-        SECRET_NAME: secret.env("MCPSANDBOX_SECRET"),
+        PUBLIC_NAME: "mcpbash",
+        SECRET_NAME: secret.env("MCPBASH_SECRET"),
       },
       commands: {
         secretcheck: cli({
@@ -70,7 +70,7 @@ describe("mcpsandbox", () => {
   });
 
   test("blocks denied filesystem paths", async () => {
-    const root = createTempDir("mcpsandbox-fs-");
+    const root = createTempDir("mcpbash-fs-");
     const sandbox = await createSandbox({
       filesystem: {
         mode: "readwrite",
@@ -92,7 +92,7 @@ describe("mcpsandbox", () => {
   });
 
   test("supports an in-memory filesystem mode", async () => {
-    const root = createTempDir("mcpsandbox-memory-");
+    const root = createTempDir("mcpbash-memory-");
     const sandbox = await createSandbox({
       filesystem: {
         mode: "memory",
@@ -123,7 +123,7 @@ describe("mcpsandbox", () => {
   });
 
   test("maps MCP commands through the configured invoker", async () => {
-    const root = createTempDir("mcpsandbox-mcp-");
+    const root = createTempDir("mcpbash-mcp-");
 
     const server = http.createServer((req, res) => {
       if (req.method !== "POST" || req.url !== "/tools/search_repositories") {
@@ -181,7 +181,7 @@ describe("mcpsandbox", () => {
   });
 
   test("passes through just-bash execution limits", async () => {
-    const root = createTempDir("mcpsandbox-limits-");
+    const root = createTempDir("mcpbash-limits-");
     const sandbox = await createSandbox({
       filesystem: { mode: "readwrite", root },
       bash: {
@@ -199,7 +199,7 @@ describe("mcpsandbox", () => {
   });
 
   test("aliases sandbox providers to CLI-backed commands", async () => {
-    const root = createTempDir("mcpsandbox-provider-");
+    const root = createTempDir("mcpbash-provider-");
     const sandbox = await createSandbox({
       filesystem: { mode: "readwrite", root },
       commands: {
@@ -215,7 +215,7 @@ describe("mcpsandbox", () => {
   });
 
   test("supports git as a built-in integration", async () => {
-    const root = createTempDir("mcpsandbox-git-");
+    const root = createTempDir("mcpbash-git-");
     const sandbox = await createSandbox({
       filesystem: { mode: "readwrite", root },
       integrations: { git: true },
@@ -229,7 +229,7 @@ describe("mcpsandbox", () => {
   });
 
   test("rejects git integration with in-memory filesystem mode", async () => {
-    const root = createTempDir("mcpsandbox-memory-git-");
+    const root = createTempDir("mcpbash-memory-git-");
 
     await expect(
       createSandbox({

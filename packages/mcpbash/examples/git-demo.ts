@@ -4,7 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { createSandbox } from "../src/index";
 
 async function main() {
-  const root = await mkdtemp(path.join(os.tmpdir(), "mcpsandbox-git-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "mcpbash-git-"));
 
   try {
     const sandbox = await createSandbox({
@@ -14,7 +14,7 @@ async function main() {
     });
 
     await sandbox.run("mkdir src");
-    await sandbox.fs.write("src/index.ts", 'export const demo = "mcpsandbox";\n');
+    await sandbox.fs.write("src/index.ts", 'export const demo = "mcpbash";\n');
     await sandbox.run("git init -q");
 
     console.log("git commands:", sandbox.commands());

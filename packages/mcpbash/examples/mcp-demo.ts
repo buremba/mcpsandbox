@@ -55,7 +55,7 @@ function startDemoServer(): Promise<{ url: string; close(): Promise<void> }> {
 }
 
 async function main() {
-  const root = await mkdtemp(path.join(os.tmpdir(), "mcpsandbox-mcp-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "mcpbash-mcp-"));
   const server = await startDemoServer();
 
   try {
@@ -74,7 +74,7 @@ async function main() {
 
     console.log(
       "mcp result:",
-      await sandbox.run('github.search "mcpsandbox demo"')
+      await sandbox.run('github.search "mcpbash demo"')
     );
   } finally {
     await server.close();

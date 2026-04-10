@@ -1,5 +1,5 @@
 {
-  "name": "mcpsandbox",
+  "name": "mcpbash",
   "version": "0.0.1",
   "description": "Build tiny sandboxes from MCP tools, TypeScript functions, and CLIs.",
   "type": "module",
@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "bun test test/mcpsandbox.test.ts",
+    "test": "bun test test/mcpbash.test.ts",
     "bench": "bun run examples/benchmark.ts",
     "demo:mixed": "bun run examples/mixed-demo.ts",
     "demo:git": "bun run examples/git-demo.ts",

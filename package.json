@@ -5,15 +5,15 @@
   "type": "module",
   "workspaces": [
     "packages/ai-sdk",
-    "packages/mcpsandbox",
+    "packages/mcpbash",
     "packages/server",
     "packages/shared",
     "packages/widget-react",
     "docs"
   ],
   "scripts": {
-    "build": "make build && pnpm run build:mcpsandbox",
-    "build:mcpsandbox": "pnpm --filter mcpsandbox build",
+    "build": "make build && pnpm run build:mcpbash",
+    "build:mcpbash": "pnpm --filter mcpbash build",
     "dev": "make dev",
     "serve": "node scripts/dev-serve.js serve --no-ui",
     "init": "node scripts/dev-serve.js init",
@@ -24,9 +24,9 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
-    "typecheck:mcpsandbox": "pnpm --filter mcpsandbox typecheck",
+    "typecheck:mcpbash": "pnpm --filter mcpbash typecheck",
     "test": "node --test",
-    "test:mcpsandbox": "pnpm --filter mcpsandbox test",
+    "test:mcpbash": "pnpm --filter mcpbash test",
     "prepare": "husky",
     "1mcp": "node packages/server/dist/cli/index.js"
   },
