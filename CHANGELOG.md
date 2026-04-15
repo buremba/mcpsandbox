@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0](https://github.com/buremba/mcpbash/compare/v1.1.0...v1.2.0) (2026-04-15)
+
+
+### Features
+
+* add mcpsandbox package to monorepo ([b87dab8](https://github.com/buremba/mcpbash/commit/b87dab85cb2d8c24a02c56882043d222647a411f))
+* expose just-bash runtime options ([b9195c2](https://github.com/buremba/mcpbash/commit/b9195c231609296c6c186db1922ddc269f08cf3f))
+* Introduce browser-only AI SDK client with a dedicated demo and shared MCP proxy logic. ([255826e](https://github.com/buremba/mcpbash/commit/255826e57d6c9634b5b871861959a4bb83cc2b55))
+
+
+### Bug Fixes
+
+* Prevent Prism auto-highlighting conflicts in Features section, enhance FAQ hash-based scrolling to react to URL changes, and correct a typo. ([a2a9ce4](https://github.com/buremba/mcpbash/commit/a2a9ce48928a96c9e14f3c62692519decd394dd0))
+
 ## [1.1.0](https://github.com/buremba/1mcp/compare/v1.0.0...v1.1.0) (2025-11-22)
 
 
