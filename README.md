@@ -1,138 +1,244 @@
 # mcpbash
 
-Build tiny sandboxes from MCP tools, TypeScript functions, CLIs, provider adapters, and `just-bash`.
+Build tiny sandboxes from MCP tools, TypeScript functions, CLIs, and `just-bash`.
 
-`mcpbash` gives you a lightweight sandbox object inspired by Daytona-style ergonomics, but built around command projection instead of a full VM or container. You map capabilities into a minimal runtime, then let an agent use them through shell commands and a small typed API.
+`mcpbash` gives you a small shell-first sandbox object. Instead of provisioning a VM or container, you map capabilities into commands and run them through a controlled runtime.
 
-## What It Supports
+## Install
 
-- `just-bash` as the execution engine
-- Built-in filesystem modes for in-memory, read-only overlay, or read-write disk-backed sandboxes
-- Built-in `git` integration
-- MCP-backed commands via `mcp(...)`
-- TypeScript handlers via `fn(...)`
-- Existing binaries via `cli(...)`
-- External sandbox providers via `provider(...)`
-- Top-level network policy for MCP host checks
-- Safe passthrough for non-conflicting `just-bash` options through `bash`
-- Secret references resolved at runtime for mapped commands
-
-Today, `mcpbash` supports the `just-bash` features that fit this model cleanly, especially execution limits and other non-conflicting runtime toggles. For example, `bash.executionLimits` is passed straight through to `just-bash`, while `filesystem`, `env`, `network`, and generated commands stay owned by `mcpbash`.
-
-## Simple Example
-
-Map an MCP tool into a bash-like command and call it with `sandbox.run(...)`.
-
-```ts
-import { createSandbox, mcp } from "mcpbash";
-
-const sandbox = await createSandbox({
-  network: {
-    allow: ["https://api.example.com/mcp/"],
-  },
-  commands: {
-    "issues.search": mcp({
-      server: "https://api.example.com/mcp",
-      tool: "search_issues",
-      input: { query: "$1" },
-    }),
-  },
-});
-
-const result = await sandbox.run('issues.search "billing bug"');
-console.log(result.stdout);
+```bash
+pnpm add mcpbash
+# or
+npm install mcpbash
 ```
 
-## Full Example
+## Why use it?
 
-This example shows the main pieces together: filesystem mode, secrets, a TypeScript handler, an MCP command, a local CLI, and `git`.
+- Map MCP tools to shell commands
+- Map TypeScript functions to shell commands
+- Wrap existing binaries
+- Choose an in-memory, read-only, or read-write filesystem
+- Opt into `git` support when you need it
+- Control outbound MCP access with a simple network policy
+- Resolve secrets at runtime instead of hardcoding them
+
+## Quick start
+
+This example creates one command, `slugify`, and runs it inside the sandbox.
 
 ```ts
-import { createSandbox, fn, mcp, cli, provider, secret } from "mcpbash";
+import { createSandbox, fn } from "mcpbash";
 
 const sandbox = await createSandbox({
-  filesystem: {
-    mode: "readwrite",
-    root: "./workspace",
-  },
-  network: {
-    allow: ["api.github.com"],
-  },
-  bash: {
-    executionLimits: {
-      maxLoopIterations: 1000,
-    },
-  },
-  integrations: {
-    git: true,
-  },
-  env: {
-    GITHUB_TOKEN: secret.env("GITHUB_TOKEN"),
-  },
+  filesystem: { mode: "memory" },
   commands: {
     slugify: fn({
       input: { text: "$1" },
       handler: ({ text }: { text: string }) =>
         text.toLowerCase().replace(/\s+/g, "-"),
     }),
-    "github.search": mcp({
-      server: "https://proxy.example.com/mcp",
-      tool: "search_repositories",
-      input: { q: "$1" },
-    }),
-    jq: cli({
-      command: "jq",
-      args: ["$1", "$2"],
-    }),
-    "docker.node": provider({
-      command: "docker",
-      args: ["run", "--rm", "node:20-alpine", "node", "-e", "$1"],
+  },
+});
+
+const result = await sandbox.run('slugify "Hello World"');
+
+console.log(result.stdout); // hello-world
+console.log(result.exitCode); // 0
+
+await sandbox.dispose();
+```
+
+## Common patterns
+
+### Run a real MCP-backed command
+
+This example is fully runnable. It starts a tiny local HTTP server that behaves like an MCP tool endpoint, maps that tool into the sandbox as `repos.search`, and calls it like a shell command.
+
+```ts
+import http from "node:http";
+import { createSandbox, mcp } from "mcpbash";
+
+async function startToolServer(): Promise<{ url: string; close(): Promise<void> }> {
+  return new Promise((resolve) => {
+    const server = http.createServer((req, res) => {
+      if (req.method !== "POST" || req.url !== "/tools/search_repositories") {
+        res.statusCode = 404;
+        res.end("not found");
+        return;
+      }
+
+      let body = "";
+      req.on("data", (chunk) => {
+        body += chunk.toString("utf8");
+      });
+      req.on("end", () => {
+        const { input } = JSON.parse(body) as { input?: { q?: string } };
+        const query = input?.q ?? "";
+
+        res.setHeader("content-type", "application/json");
+        res.end(
+          JSON.stringify({
+            result: {
+              query,
+              repos: [
+                `${query}-api`,
+                `${query}-web`,
+                `${query}-worker`,
+              ],
+            },
+          })
+        );
+      });
+    });
+
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address();
+      if (!address || typeof address === "string") {
+        throw new Error("failed to start tool server");
+      }
+
+      resolve({
+        url: `http://127.0.0.1:${address.port}`,
+        close: () =>
+          new Promise<void>((done, reject) => {
+            server.close((error) => {
+              if (error) reject(error);
+              else done();
+            });
+          }),
+      });
+    });
+  });
+}
+
+const toolServer = await startToolServer();
+
+try {
+  const sandbox = await createSandbox({
+    filesystem: { mode: "memory" },
+    network: {
+      allow: ["127.0.0.1"],
+    },
+    commands: {
+      "repos.search": mcp({
+        server: toolServer.url,
+        tool: "search_repositories",
+        input: { q: "$1" },
+      }),
+    },
+  });
+
+  const result = await sandbox.run('repos.search "billing"');
+  console.log(result.stdout);
+  // {
+  //   "query": "billing",
+  //   "repos": ["billing-api", "billing-web", "billing-worker"]
+  // }
+
+  await sandbox.dispose();
+} finally {
+  await toolServer.close();
+}
+```
+
+See also: `packages/mcpbash/examples/mcp-demo.ts`
+
+### Wrap a local CLI
+
+```ts
+import { cli, createSandbox } from "mcpbash";
+
+const sandbox = await createSandbox({
+  commands: {
+    upper: cli({
+      command: process.execPath,
+      args: [
+        "-e",
+        "process.stdout.write((process.argv[1] ?? '').toUpperCase())",
+        "$1",
+      ],
     }),
   },
 });
 
-await sandbox.run('slugify "Hello World"');
-await sandbox.run("git status");
+console.log((await sandbox.run('upper "hello"')).stdout); // HELLO
 ```
 
-## Core Ideas
+### Work in a writable directory with git
 
 ```ts
-import { createSandbox, mcp, fn, cli, provider } from "mcpbash";
+import { createSandbox } from "mcpbash";
+
+const sandbox = await createSandbox({
+  filesystem: {
+    mode: "readwrite",
+    root: "./workspace",
+  },
+  integrations: {
+    git: true,
+  },
+});
+
+await sandbox.run("git init -q");
+await sandbox.fs.write("README.md", "# demo\n");
+
+const status = await sandbox.git?.status(["--short"]);
+console.log(status?.stdout);
 ```
 
-- `createSandbox(...)` builds a small shell-oriented sandbox
-- `mcp(...)` maps an MCP tool into a shell command
-- `fn(...)` maps a TypeScript function into a shell command
+## API at a glance
+
+```ts
+import { createSandbox, mcp, fn, cli, provider, secret } from "mcpbash";
+```
+
+- `createSandbox(...)` creates a sandbox
+- `mcp(...)` maps an MCP tool to a command
+- `fn(...)` maps a TypeScript handler to a command
 - `cli(...)` wraps a local binary
-- `provider(...)` is a semantic alias for `cli(...)` when that command delegates work to another sandbox runtime
-- `filesystem.mode` can be `memory`, `readonly`, or `readwrite`
-- `sandbox.run(...)` executes commands in the sandbox
-- `sandbox.fs` exposes simple read, write, list, and exists helpers
+- `provider(...)` is an alias for `cli(...)` for external runtimes
+- `secret.env("NAME")` resolves a secret at runtime
+- `sandbox.run(...)` executes a command
+- `sandbox.fs` exposes `read`, `write`, `list`, and `exists`
+- `sandbox.git` exposes `status`, `diff`, and `log` when git is enabled
 
-## Advanced Usage
+## Filesystem modes
 
-Use [ADVANCED.md](./ADVANCED.md) for:
+- `memory`: isolated in-memory sandbox
+- `readonly`: overlay an existing directory without writes
+- `readwrite`: back the sandbox with a real directory
 
-- filesystem modes
-- command adapter details
+## Examples in this repo
+
+- `packages/mcpbash/examples/mixed-demo.ts`
+- `packages/mcpbash/examples/mcp-demo.ts`
+- `packages/mcpbash/examples/git-demo.ts`
+- `packages/mcpbash/examples/benchmark.ts`
+
+Run them:
+
+```bash
+pnpm install
+pnpm --filter mcpbash demo:mixed
+pnpm --filter mcpbash demo:mcp
+pnpm --filter mcpbash demo:git
+pnpm --filter mcpbash bench
+```
+
+## Advanced usage
+
+See [ADVANCED.md](./ADVANCED.md) for:
+
+- filesystem allow/deny rules
 - secrets
-- network and limits
+- network policy
 - MCP auth and OAuth patterns
 - provider examples with Daytona, Upstash Box, and Docker
 - current limitations
 
 ## Performance
 
-This project is optimized for the local fast path. It does not need to provision a VM, container, or remote session just to dispatch a mapped function or shell command.
-
-That said, it should not claim "fastest sandbox" as a universal truth across every category. Daytona, Upstash Box, and Docker solve broader isolation and lifecycle problems, so direct latency comparisons are only fair when you compare the same execution model.
-
-Local benchmark on April 9, 2026:
-
-- machine: Apple M4 Pro
-- runtime: Bun 1.3.5
-- package: `packages/mcpbash/examples/benchmark.ts`
+Local benchmark on April 9, 2026, on an Apple M4 Pro with Bun 1.3.5:
 
 | Operation | Mean | P50 | P95 |
 | --- | ---: | ---: | ---: |
@@ -142,44 +248,9 @@ Local benchmark on April 9, 2026:
 | mapped `provider(...)` command (`true`) | 2.143 ms | 2.038 ms | 3.298 ms |
 | mapped `cli(...)` command (`node -e`) | 4.160 ms | 3.878 ms | 7.314 ms |
 
-Reference point against mainstream sandbox providers:
+The important takeaway is category-level: `mcpbash` stays on the local fast path. It does not provision a VM, container, or remote session just to dispatch a mapped command, so startup and dispatch stay in the low-millisecond range.
 
-Representative provider comparison:
-
-| Percentile | `mcpbash` | Fastest Sandbox (E2B) | Speedup |
-| --- | ---: | ---: |
-| p50 | 4.8 ms | 440 ms | 92x faster |
-| p95 | 5.6 ms | 950 ms | 170x faster |
-| p99 | 6.1 ms | 3,150 ms | 516x faster |
-
-Memory per instance:
-
-| Workload | `mcpbash` | Cheapest Sandbox (Daytona) | Reduction |
-| --- | ---: | ---: |
-| full coding agent | ~131 MB | ~1,024 MB | 8x smaller |
-| simple shell command | ~22 MB | ~1,024 MB | 47x smaller |
-
-How `mcpbash` fits into that frame:
-
-- `createSandbox()` p50 in this repo is `0.040 ms`, mean `0.067 ms`, p95 `0.090 ms`
-- built-in shell dispatch is sub-millisecond
-- host-process-backed `provider(...)` and `cli(...)` are still only low single-digit milliseconds on the local machine
-- this places `mcpbash` firmly in the same local fast-path category as in-process runtimes, not the remote sandbox category
-
-Comparison notes:
-
-- these are not same-machine, same-runtime, same-hardware numbers, so treat them as directional rather than a head-to-head benchmark
-- `mcpbash` numbers above were measured on an Apple M4 Pro with Bun 1.3.5
-- the useful conclusion is category-level: local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandbox providers
-
-Interpretation:
-
-- the local in-process path is sub-millisecond
-- host process dispatch is still only a few milliseconds
-- published E2B and Daytona comparisons are directionally consistent with the claim that local in-process runtimes are orders of magnitude closer to zero-overhead setup than remote sandboxes
-- remote sandboxes will be slower on raw dispatch, because they add container startup, control-plane work, or network round-trips
-
-Run the same benchmark locally:
+Run the benchmark locally:
 
 ```bash
 pnpm --filter mcpbash bench
@@ -192,8 +263,4 @@ pnpm install
 pnpm --filter mcpbash typecheck
 pnpm --filter mcpbash build
 pnpm --filter mcpbash test
-pnpm --filter mcpbash bench
-pnpm --filter mcpbash demo:mixed
-pnpm --filter mcpbash demo:git
-pnpm --filter mcpbash demo:mcp
 ```
